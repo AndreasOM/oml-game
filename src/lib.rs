@@ -5,3 +5,4 @@ pub use game::Game;
 pub mod math;
 pub mod system;
 pub mod window;
+pub mod renderer;
