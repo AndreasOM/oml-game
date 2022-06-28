@@ -8,4 +8,6 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.58"
 chrono = "0.4.19"
+crc = "3.0.0"
+dirs-next = "2.0.0"
 glutin = "0.28.0"
