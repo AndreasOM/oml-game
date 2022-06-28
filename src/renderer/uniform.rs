@@ -1,6 +1,4 @@
-
-
-#[derive(Debug,Copy,Clone)]
+#[derive(Debug, Copy, Clone)]
 pub enum Uniform {
-	F32( f32 ),
+	F32(f32),
 }
