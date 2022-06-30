@@ -47,6 +47,10 @@ impl WindowUpdateContext {
 		self.is_key_pressed[key as usize] && !self.previous_keys_pressed[key as usize]
 	}
 
+	pub fn is_key_pressed(&self, key: u8) -> bool {
+		self.is_key_pressed[key as usize]
+	}
+
 	pub fn time_step(&self) -> f64 {
 		self.time_step
 	}
