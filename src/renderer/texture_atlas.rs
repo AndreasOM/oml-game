@@ -75,11 +75,15 @@ impl TextureAtlas {
 		let mut i = 0;
 		loop {
 			let name = simple_format_u32(template, i);
+			let single_file = name == template;
 			let name_atlas = format!("{}.atlas", &name);
 			let name_png = format!("{}.png", &name);
-
+			println!("{:?} {}", single_file, &name_png);
 			if fs.exists(&name_atlas) && fs.exists(&name_png) {
 				to_load.push(name.to_owned());
+				if single_file {
+					break;
+				};
 			} else {
 				break;
 			}
