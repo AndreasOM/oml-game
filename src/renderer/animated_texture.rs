@@ -50,6 +50,8 @@ pub struct AnimatedTexture {
 	current_frame:         u16,
 	time_per_frame:        f32,
 	time_in_current_frame: f32,
+	autoloop:              bool,
+	completed:             bool,
 }
 
 impl AnimatedTexture {
@@ -63,6 +65,8 @@ impl AnimatedTexture {
 			current_frame:         0,
 			time_per_frame:        f32::MAX,
 			time_in_current_frame: 0.0,
+			autoloop:              true,
+			completed:             false,
 		}
 	}
 
@@ -104,21 +108,33 @@ impl AnimatedTexture {
 		}
 
 		if f < self.first_frame || f >= self.first_frame + self.number_of_frames {
-			todo!("how di we get here?");
+			todo!("how did we get here?");
 		}
 
 		self.current_frame = f;
+		self.completed = false;
+	}
+
+	pub fn set_autoloop(&mut self, autoloop: bool) {
+		self.autoloop = autoloop;
 	}
 
 	pub fn update(&mut self, time_step: f64) {
 		self.time_in_current_frame += time_step as f32;
-		while self.time_in_current_frame > self.time_per_frame {
-			//			self.current_frame = ( self.current_frame+1 ) % self.number_of_frames;
-			self.current_frame += 1;
-			if self.current_frame >= self.first_frame + self.number_of_frames {
-				self.current_frame -= self.number_of_frames;
+		if !self.completed {
+			while self.time_in_current_frame > self.time_per_frame {
+				//			self.current_frame = ( self.current_frame+1 ) % self.number_of_frames;
+				self.current_frame += 1;
+				if self.current_frame >= self.first_frame + self.number_of_frames {
+					if self.autoloop {
+						self.current_frame -= self.number_of_frames;
+					} else {
+						self.current_frame = self.first_frame + self.number_of_frames;
+						self.set_completed(true);
+					}
+				}
+				self.time_in_current_frame -= self.time_per_frame;
 			}
-			self.time_in_current_frame -= self.time_per_frame;
 		}
 	}
 
@@ -148,6 +164,13 @@ impl AnimatedTexture {
 			},
 			_ => todo!("Add support for {} digits", number_of_digits),
 		}
+	}
+
+	pub fn set_completed(&mut self, completed: bool) {
+		self.completed = completed;
+	}
+	pub fn completed(&self) -> bool {
+		self.completed
 	}
 
 	// :HACK: Scanning the filesystem is a bad idea, the info should come from the config
