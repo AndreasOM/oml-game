@@ -156,16 +156,15 @@ impl Window {
 						},
 						_ => {
 							// println!("KeyboardInput {:?}", &virtual_code);
-							if let Some( ascii ) = match virtual_code {
-								VirtualKeyCode::LBracket => Some( 91 ),
-								VirtualKeyCode::RBracket => Some( 93 ),
+							if let Some(ascii) = match virtual_code {
+								VirtualKeyCode::LBracket => Some(91),
+								VirtualKeyCode::RBracket => Some(93),
 								_ => None,
 							} {
-								window_update_context.is_key_pressed[ ascii ] =
+								window_update_context.is_key_pressed[ascii] =
 									state == ElementState::Pressed;
 							} else {
 								println!("Unmapped KeyboardInput {:?} !", &virtual_code);
-
 							}
 						},
 					},
