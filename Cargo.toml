@@ -1,9 +1,17 @@
 [package]
 name = "oml-game"
-version = "0.1.0"
+version = "0.1.0-dev"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+license = "MIT"
+description = "Game foundation extracted from Fiiish-RS to remove boilerplate for future procjects."
+readme = "README.md"
+homepage = "https://github.com/AndreasOM/oml-game"
+repository = "https://github.com/AndreasOM/oml-game"
+keywords = ["tools", "gamedev"]
+categories = ["multimedia","game-development"]
 
 [dependencies]
 anyhow = "1.0.58"
