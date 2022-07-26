@@ -2,7 +2,7 @@ use derive_getters::Getters;
 
 use crate::math::Vector2;
 
-#[derive(Debug, Default, Getters)]
+#[derive(Debug, Default, Copy, Clone, Getters)]
 pub struct Rectangle {
 	pos:  Vector2,
 	size: Vector2,
@@ -22,29 +22,51 @@ impl Rectangle {
 		self.size.y
 	}
 
-	pub fn set_pos(mut self, pos: &Vector2) -> Self {
+	pub fn set_x( &mut self, x: f32 ) {
+		self.pos.x = x;
+	}
+	pub fn set_y( &mut self, y: f32 ) {
+		self.pos.y = y;
+	}
+	pub fn set_width( &mut self, width: f32 ) {
+		self.size.x = width;
+	}
+	pub fn set_height( &mut self, height: f32 ) {
+		self.pos.y = height;
+	}
+
+	pub fn offset( &mut self, offset: &Vector2 ) {
+		self.pos = self.pos.add( offset );
+	}
+
+	pub fn with_offset(mut self, offset: &Vector2) -> Self {
+		self.pos = self.pos.add( offset );
+		self
+	}
+
+	pub fn with_pos(mut self, pos: &Vector2) -> Self {
 		self.pos = *pos;
 		self
 	}
 
-	pub fn set_size(mut self, size: &Vector2) -> Self {
+	pub fn with_size(mut self, size: &Vector2) -> Self {
 		self.size = *size;
 		self
 	}
 
-	pub fn set_x(mut self, x: f32) -> Self {
+	pub fn with_x(mut self, x: f32) -> Self {
 		self.pos.x = x;
 		self
 	}
-	pub fn set_y(mut self, y: f32) -> Self {
+	pub fn with_y(mut self, y: f32) -> Self {
 		self.pos.y = y;
 		self
 	}
-	pub fn set_width(mut self, width: f32) -> Self {
+	pub fn with_width(mut self, width: f32) -> Self {
 		self.size.x = width;
 		self
 	}
-	pub fn set_height(mut self, height: f32) -> Self {
+	pub fn with_height(mut self, height: f32) -> Self {
 		self.size.y = height;
 		self
 	}
@@ -75,10 +97,10 @@ mod tests {
 	#[test]
 	fn can_position_and_size() {
 		let r = Rectangle::default()
-			.set_x(1.0)
-			.set_y(2.0)
-			.set_width(3.0)
-			.set_height(4.0);
+			.with_x(1.0)
+			.with_y(2.0)
+			.with_width(3.0)
+			.with_height(4.0);
 
 		assert_eq!(r.pos().x, 1.0);
 		assert_eq!(r.pos().y, 2.0);
@@ -93,8 +115,8 @@ mod tests {
 	#[test]
 	fn can_position_and_size_with_vector2() {
 		let r = Rectangle::default()
-			.set_pos(&Vector2::new(1.0, 2.0))
-			.set_size(&Vector2::new(3.0, 4.0));
+			.with_pos(&Vector2::new(1.0, 2.0))
+			.with_size(&Vector2::new(3.0, 4.0));
 
 		assert_eq!(r.pos().x, 1.0);
 		assert_eq!(r.pos().y, 2.0);

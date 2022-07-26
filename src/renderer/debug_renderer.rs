@@ -5,6 +5,7 @@ use lazy_static::lazy_static;
 
 use crate::math::Matrix22;
 use crate::math::Vector2;
+use crate::math::Rectangle;
 use crate::renderer::{Color, Renderer};
 
 #[derive(Debug)]
@@ -140,6 +141,36 @@ impl DebugRenderer {
 		};
 		self.lines.push(line);
 	}
+	pub fn add_rectangle(&mut self, rect: &Rectangle, width: f32, color: &Color ) {
+		let s = &rect.pos();
+		let e = s.add( &rect.size() );
+
+		self.add_line(
+			&Vector2::new(s.x, s.y),
+			&Vector2::new(e.x, s.y),
+			width,
+			color,
+		);
+		self.add_line(
+			&Vector2::new(e.x, s.y),
+			&Vector2::new(e.x, e.y),
+			width,
+			color,
+		);
+		self.add_line(
+			&Vector2::new(e.x, e.y),
+			&Vector2::new(s.x, e.y),
+			width,
+			color,
+		);
+		self.add_line(
+			&Vector2::new(s.x, e.y),
+			&Vector2::new(s.x, s.y),
+			width,
+			color,
+		);
+	}
+
 	pub fn add_frame(&mut self, pos: &Vector2, size: &Vector2, width: f32, color: &Color) {
 		let half_size = size.scaled_vector2(&Vector2::new(-0.5, 0.5));
 		let top_left = pos.add(&half_size);
