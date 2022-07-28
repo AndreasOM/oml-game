@@ -150,12 +150,22 @@ impl Window {
 						(vkc, state) if vkc >= VirtualKeyCode::A && vkc <= VirtualKeyCode::Z => {
 							let o = ((vkc as u16) - (VirtualKeyCode::A as u16)) as u8;
 							let o = (o + 'a' as u8) as usize;
-							//println!("KeyboardInput A-Z {:?} -> {}", &vkc, &o);
+							println!("KeyboardInput A-Z {:?} -> {}", &vkc, &o);
 							window_update_context.is_key_pressed[o] =
 								state == ElementState::Pressed;
 						},
 						_ => {
-							println!("KeyboardInput {:?}", &virtual_code);
+							// println!("KeyboardInput {:?}", &virtual_code);
+							if let Some(ascii) = match virtual_code {
+								VirtualKeyCode::LBracket => Some(91),
+								VirtualKeyCode::RBracket => Some(93),
+								_ => None,
+							} {
+								window_update_context.is_key_pressed[ascii] =
+									state == ElementState::Pressed;
+							} else {
+								println!("Unmapped KeyboardInput {:?} !", &virtual_code);
+							}
 						},
 					},
 					_ => (),
