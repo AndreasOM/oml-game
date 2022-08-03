@@ -149,7 +149,7 @@ pub struct Renderer {
 	tex_matrix: Matrix32,
 
 	// :TODO: replace with model-view-stack
-	translation: [Vector2;256],
+	translation: [Vector2; 256],
 
 	size:          Vector2,
 	viewport_pos:  Vector2,
@@ -179,7 +179,7 @@ impl Renderer {
 			mvp_matrix: Matrix44::identity(),
 			tex_matrix: Matrix32::identity(),
 
-			translation: [Vector2::zero();256],
+			translation: [Vector2::zero(); 256],
 
 			size:          Vector2::zero(),
 			viewport_pos:  Vector2::zero(),
@@ -296,7 +296,7 @@ impl Renderer {
 		for t in self.translation.iter_mut() {
 			*t = Vector2::zero()
 		}
-//		self.translation = Vector2::zero();
+		//		self.translation = Vector2::zero();
 	}
 
 	pub fn end_frame(&mut self) {
@@ -521,13 +521,13 @@ impl Renderer {
 		self.tex_coords = *tex_coords;
 	}
 
-	pub fn add_translation_for_layer( &mut self, layer_id: u8, offset: &Vector2 ) {
+	pub fn add_translation_for_layer(&mut self, layer_id: u8, offset: &Vector2) {
 		// :TODO: use matrix stack
-		self.translation[ layer_id as usize ] = self.translation[ layer_id as usize ].add( offset );
+		self.translation[layer_id as usize] = self.translation[layer_id as usize].add(offset);
 	}
 
 	pub fn add_vertex(&mut self, pos: &Vector2) -> u32 {
-		let pos = pos.add( &self.translation[ self.active_layer_id as usize ] );
+		let pos = pos.add(&self.translation[self.active_layer_id as usize]);
 		let pos = &pos;
 		let v = Vertex::from_pos_with_tex_coords_and_color(pos, &self.tex_coords, &self.color);
 		self.vertices.push(v);

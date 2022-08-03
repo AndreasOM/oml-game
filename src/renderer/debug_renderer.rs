@@ -4,8 +4,8 @@ use std::sync::Mutex;
 use lazy_static::lazy_static;
 
 use crate::math::Matrix22;
-use crate::math::Vector2;
 use crate::math::Rectangle;
+use crate::math::Vector2;
 use crate::renderer::{Color, Renderer};
 
 #[derive(Debug)]
@@ -141,9 +141,9 @@ impl DebugRenderer {
 		};
 		self.lines.push(line);
 	}
-	pub fn add_rectangle(&mut self, rect: &Rectangle, width: f32, color: &Color ) {
+	pub fn add_rectangle(&mut self, rect: &Rectangle, width: f32, color: &Color) {
 		let s = &rect.pos();
-		let e = s.add( &rect.size() );
+		let e = s.add(&rect.size());
 
 		self.add_line(
 			&Vector2::new(s.x, s.y),
