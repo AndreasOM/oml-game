@@ -1,6 +1,7 @@
 use core::ops::Mul;
 use std::ops::Index;
 
+use crate::math::Vector3;
 use crate::math::Vector4;
 
 #[derive(Copy, Clone, PartialEq)]
@@ -42,6 +43,14 @@ impl Matrix44 {
 		Self {
 			m: [
 				1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+			],
+		}
+	}
+
+	pub fn translation(v: &Vector3) -> Self {
+		Self {
+			m: [
+				1.0, 0.0, 0.0, v.x, 0.0, 1.0, 0.0, v.y, 0.0, 0.0, 1.0, v.z, 0.0, 0.0, 0.0, 1.0,
 			],
 		}
 	}
@@ -162,6 +171,12 @@ impl Matrix44 {
 	}
 }
 
+impl Default for Matrix44 {
+	fn default() -> Self {
+		Matrix44::identity()
+	}
+}
+
 impl std::fmt::Debug for Matrix44 {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 		let m = &self.m;
@@ -209,6 +224,16 @@ impl Mul<Vector4> for Matrix44 {
 
 	fn mul(self, rhs: Vector4) -> Vector4 {
 		self.multiply_vector4(&rhs)
+	}
+}
+
+impl Mul<Vector3> for Matrix44 {
+	type Output = Vector3;
+
+	fn mul(self, rhs: Vector3) -> Vector3 {
+		let v4 = Vector4::from_vector3(&rhs);
+		let vr4 = self.multiply_vector4(&v4);
+		Vector3::from_vector4(&vr4)
 	}
 }
 
@@ -286,6 +311,21 @@ mod tests {
 		let ve = Vector4::new(14.0, 38.0, 62.0, 86.0);
 
 		assert_eq!(vr, ve);
+
+		Ok(())
+	}
+
+	#[test]
+	fn translation_works() -> anyhow::Result<()> {
+		let v0 = Vector3::new(1.0, 2.0, 3.0);
+		let v1 = Vector3::new(2.0, 3.0, 4.0);
+		let ve = Vector3::new(3.0, 5.0, 7.0);
+
+		let t = Matrix44::translation(&v1);
+		let vr3 = t * v0;
+		//		let vr3 = Vector3::from_vector4( &vr4 );
+
+		assert_eq!(vr3, ve);
 
 		Ok(())
 	}

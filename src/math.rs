@@ -6,6 +6,8 @@ mod matrix33;
 pub use matrix33::Matrix33;
 mod matrix44;
 pub use matrix44::Matrix44;
+mod matrix44stack;
+pub use matrix44stack::Matrix44Stack;
 mod vector2;
 pub use vector2::Vector2;
 mod vector3;
