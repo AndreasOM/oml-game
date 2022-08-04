@@ -1,6 +1,7 @@
 use core::ops::Mul;
 use std::ops::Index;
 
+use crate::math::Vector2;
 use crate::math::Vector3;
 use crate::math::Vector4;
 
@@ -234,6 +235,16 @@ impl Mul<Vector3> for Matrix44 {
 		let v4 = Vector4::from_vector3(&rhs);
 		let vr4 = self.multiply_vector4(&v4);
 		Vector3::from_vector4(&vr4)
+	}
+}
+
+impl Mul<Vector2> for Matrix44 {
+	type Output = Vector2;
+
+	fn mul(self, rhs: Vector2) -> Vector2 {
+		let v4 = Vector4::from_vector2(&rhs);
+		let vr4 = self.multiply_vector4(&v4);
+		Vector2::from_vector4(&vr4)
 	}
 }
 

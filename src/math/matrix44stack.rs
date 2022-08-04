@@ -7,6 +7,10 @@ pub struct Matrix44Stack {
 }
 
 impl Matrix44Stack {
+	pub fn clear(&mut self) {
+		self.stack.clear();
+		self.top = Matrix44::identity();
+	}
 	pub fn top(&self) -> &Matrix44 {
 		&self.top
 	}

@@ -1,3 +1,5 @@
+use crate::math::Vector4;
+
 #[derive(Default, Copy, Clone, PartialEq)]
 pub struct Vector2 {
 	pub x: f32,
@@ -11,6 +13,11 @@ impl Vector2 {
 
 	pub fn zero() -> Self {
 		Self { x: 0.0, y: 0.0 }
+	}
+
+	pub fn from_vector4(v: &Vector4) -> Self {
+		// :TODO: danger, ignore w?
+		Self { x: v.x, y: v.y }
 	}
 
 	pub fn normalized(&self) -> Self {
