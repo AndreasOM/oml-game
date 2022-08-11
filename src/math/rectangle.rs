@@ -22,25 +22,25 @@ impl Rectangle {
 		self.size.y
 	}
 
-	pub fn set_x( &mut self, x: f32 ) {
+	pub fn set_x(&mut self, x: f32) {
 		self.pos.x = x;
 	}
-	pub fn set_y( &mut self, y: f32 ) {
+	pub fn set_y(&mut self, y: f32) {
 		self.pos.y = y;
 	}
-	pub fn set_width( &mut self, width: f32 ) {
+	pub fn set_width(&mut self, width: f32) {
 		self.size.x = width;
 	}
-	pub fn set_height( &mut self, height: f32 ) {
+	pub fn set_height(&mut self, height: f32) {
 		self.pos.y = height;
 	}
 
-	pub fn offset( &mut self, offset: &Vector2 ) {
-		self.pos = self.pos.add( offset );
+	pub fn offset(&mut self, offset: &Vector2) {
+		self.pos = self.pos.add(offset);
 	}
 
 	pub fn with_offset(mut self, offset: &Vector2) -> Self {
-		self.pos = self.pos.add( offset );
+		self.pos = self.pos.add(offset);
 		self
 	}
 
