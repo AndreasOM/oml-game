@@ -1,16 +1,16 @@
-use crate::renderer::{Renderer, Texture};
-use crate::system::System;
+use std::borrow::Cow;
 
 use regex::Regex;
 
-use std::borrow::Cow;
+use crate::renderer::{Renderer, Texture};
+use crate::system::System;
 
 #[derive(Debug)]
 pub struct AnimatedTextureConfiguration {
-	pub template:           String,
-	pub first_frame:      u16,
-	pub last_frame:       u16,
-	pub fps:              f32,
+	pub template:    String,
+	pub first_frame: u16,
+	pub last_frame:  u16,
+	pub fps:         f32,
 }
 
 impl AnimatedTextureConfiguration {
@@ -33,17 +33,17 @@ impl AnimatedTextureConfiguration {
 impl From<(&str, i8, u16, u16, f32)> for AnimatedTextureConfiguration {
 	fn from(t: (&str, i8, u16, u16, f32)) -> Self {
 		Self {
-			template:           t.0.to_owned(),
-			first_frame:      t.2,
-			last_frame:       t.3,
-			fps:              t.4,
+			template:    t.0.to_owned(),
+			first_frame: t.2,
+			last_frame:  t.3,
+			fps:         t.4,
 		}
 	}
 }
 
 #[derive(Debug)]
 pub struct AnimatedTexture {
-	template:                String,
+	template:              String,
 	first_frame:           u16,
 	number_of_frames:      u16,
 	fps:                   f32,
@@ -57,7 +57,7 @@ pub struct AnimatedTexture {
 impl AnimatedTexture {
 	pub fn new() -> Self {
 		Self {
-			template:                String::new(),
+			template:              String::new(),
 			first_frame:           0,
 			number_of_frames:      0,
 			fps:                   0.0,
@@ -69,13 +69,7 @@ impl AnimatedTexture {
 		}
 	}
 
-	pub fn setup(
-		&mut self,
-		template: &str,
-		first_frame: u16,
-		number_of_frames: u16,
-		fps: f32,
-	) {
+	pub fn setup(&mut self, template: &str, first_frame: u16, number_of_frames: u16, fps: f32) {
 		self.template = template.to_owned();
 		self.first_frame = first_frame;
 		self.number_of_frames = number_of_frames;
@@ -136,46 +130,43 @@ impl AnimatedTexture {
 
 	pub fn r#use(&self, renderer: &mut Renderer) {
 		//		dbg!(&self);
-		let name = AnimatedTexture::fill_template(
-			&self.template,
-			self.current_frame,
-		);
+		let name = AnimatedTexture::fill_template(&self.template, self.current_frame);
 		renderer.use_texture(&name)
 	}
 
 	// pub for easier testing
-	pub fn fill_template( template: &str, number: u16 ) -> Cow<str> {
+	pub fn fill_template(template: &str, number: u16) -> Cow<str> {
 		let re = Regex::new(r"(.*)%((0*\d+)*)d(.*)").unwrap();
 		for caps in re.captures_iter(template) {
-//			dbg!(&caps);
+			//			dbg!(&caps);
 			if caps.len() == 5 {
-				let (prefix,format,suffix ) = (&caps[1], &caps[2], &caps[4]);
-//				eprintln!("{:?} {:?} {:?}", &prefix, &format, &suffix );
+				let (prefix, format, suffix) = (&caps[1], &caps[2], &caps[4]);
+				//				eprintln!("{:?} {:?} {:?}", &prefix, &format, &suffix );
 				let r = match format {
 					// :TODO: replace via macros?
-					"" => format!( "{}{}{}", &prefix, number, &suffix),
-					"01" => format!( "{}{:01}{}", &prefix, number, &suffix),
-					"02" => format!( "{}{:02}{}", &prefix, number, &suffix),
-					"03" => format!( "{}{:03}{}", &prefix, number, &suffix),
-					"04" => format!( "{}{:04}{}", &prefix, number, &suffix),
-					"05" => format!( "{}{:05}{}", &prefix, number, &suffix),
-					"06" => format!( "{}{:06}{}", &prefix, number, &suffix),
-					"07" => format!( "{}{:07}{}", &prefix, number, &suffix),
-					"08" => format!( "{}{:08}{}", &prefix, number, &suffix),
-					"1" => format!( "{}{:1}{}", &prefix, number, &suffix),
-					"2" => format!( "{}{:2}{}", &prefix, number, &suffix),
-					"3" => format!( "{}{:3}{}", &prefix, number, &suffix),
-					"4" => format!( "{}{:4}{}", &prefix, number, &suffix),
-					"5" => format!( "{}{:5}{}", &prefix, number, &suffix),
-					"6" => format!( "{}{:6}{}", &prefix, number, &suffix),
-					"7" => format!( "{}{:7}{}", &prefix, number, &suffix),
-					"8" => format!( "{}{:8}{}", &prefix, number, &suffix),
-					_ => format!( "{}BROKEN_TEMPLATE_%{}d_{}", &prefix, &format, &suffix),
+					"" => format!("{}{}{}", &prefix, number, &suffix),
+					"01" => format!("{}{:01}{}", &prefix, number, &suffix),
+					"02" => format!("{}{:02}{}", &prefix, number, &suffix),
+					"03" => format!("{}{:03}{}", &prefix, number, &suffix),
+					"04" => format!("{}{:04}{}", &prefix, number, &suffix),
+					"05" => format!("{}{:05}{}", &prefix, number, &suffix),
+					"06" => format!("{}{:06}{}", &prefix, number, &suffix),
+					"07" => format!("{}{:07}{}", &prefix, number, &suffix),
+					"08" => format!("{}{:08}{}", &prefix, number, &suffix),
+					"1" => format!("{}{:1}{}", &prefix, number, &suffix),
+					"2" => format!("{}{:2}{}", &prefix, number, &suffix),
+					"3" => format!("{}{:3}{}", &prefix, number, &suffix),
+					"4" => format!("{}{:4}{}", &prefix, number, &suffix),
+					"5" => format!("{}{:5}{}", &prefix, number, &suffix),
+					"6" => format!("{}{:6}{}", &prefix, number, &suffix),
+					"7" => format!("{}{:7}{}", &prefix, number, &suffix),
+					"8" => format!("{}{:8}{}", &prefix, number, &suffix),
+					_ => format!("{}BROKEN_TEMPLATE_%{}d_{}", &prefix, &format, &suffix),
 				};
 				return r.into();
-//				dbg!(&caps);
+				//				dbg!(&caps);
 			}
-		};
+		}
 		template.into()
 	}
 
@@ -187,11 +178,7 @@ impl AnimatedTexture {
 	}
 
 	// :HACK: Scanning the filesystem is a bad idea, the info should come from the config
-	pub fn register_all(
-		system: &mut System,
-		renderer: &mut Renderer,
-		template: &str,
-	) -> usize {
+	pub fn register_all(system: &mut System, renderer: &mut Renderer, template: &str) -> usize {
 		let fs = system.default_filesystem_mut();
 
 		let mut to_load = Vec::new();
@@ -228,26 +215,83 @@ mod tests {
 	use super::*;
 	#[test]
 	fn template_filenames_work() -> anyhow::Result<()> {
-		assert_eq!("test-0012-test", AnimatedTexture::fill_template( "test-0012-test", 12 ) );
-// NO!		assert_eq!("test-12-12-test", AnimatedTexture::fill_template( "test-%01d-%01d-test", 12 ) );
-		assert_eq!("test-12-test", AnimatedTexture::fill_template( "test-%01d-test", 12 ) );
-		assert_eq!("test-12-test", AnimatedTexture::fill_template( "test-%02d-test", 12 ) );
-		assert_eq!("test-012-test", AnimatedTexture::fill_template( "test-%03d-test", 12 ) );
-		assert_eq!("test-0012-test", AnimatedTexture::fill_template( "test-%04d-test", 12 ) );
-		assert_eq!("test-00012-test", AnimatedTexture::fill_template( "test-%05d-test", 12 ) );
-		assert_eq!("test-000012-test", AnimatedTexture::fill_template( "test-%06d-test", 12 ) );
-		assert_eq!("test-0000012-test", AnimatedTexture::fill_template( "test-%07d-test", 12 ) );
-		assert_eq!("test-00000012-test", AnimatedTexture::fill_template( "test-%08d-test", 12 ) );
-		assert_eq!("test-12-test", AnimatedTexture::fill_template( "test-%1d-test", 12 ) );
-		assert_eq!("test-12-test", AnimatedTexture::fill_template( "test-%2d-test", 12 ) );
-		assert_eq!("test- 12-test", AnimatedTexture::fill_template( "test-%3d-test", 12 ) );
-		assert_eq!("test-  12-test", AnimatedTexture::fill_template( "test-%4d-test", 12 ) );
-		assert_eq!("test-   12-test", AnimatedTexture::fill_template( "test-%5d-test", 12 ) );
-		assert_eq!("test-    12-test", AnimatedTexture::fill_template( "test-%6d-test", 12 ) );
-		assert_eq!("test-     12-test", AnimatedTexture::fill_template( "test-%7d-test", 12 ) );
-		assert_eq!("test-      12-test", AnimatedTexture::fill_template( "test-%8d-test", 12 ) );
-		assert_eq!("test-12-test", AnimatedTexture::fill_template( "test-%d-test", 12 ) );
-		assert_eq!("test-65535-test", AnimatedTexture::fill_template( "test-%d-test", 65535 ) );
+		assert_eq!(
+			"test-0012-test",
+			AnimatedTexture::fill_template("test-0012-test", 12)
+		);
+		// NO!		assert_eq!("test-12-12-test", AnimatedTexture::fill_template( "test-%01d-%01d-test", 12 ) );
+		assert_eq!(
+			"test-12-test",
+			AnimatedTexture::fill_template("test-%01d-test", 12)
+		);
+		assert_eq!(
+			"test-12-test",
+			AnimatedTexture::fill_template("test-%02d-test", 12)
+		);
+		assert_eq!(
+			"test-012-test",
+			AnimatedTexture::fill_template("test-%03d-test", 12)
+		);
+		assert_eq!(
+			"test-0012-test",
+			AnimatedTexture::fill_template("test-%04d-test", 12)
+		);
+		assert_eq!(
+			"test-00012-test",
+			AnimatedTexture::fill_template("test-%05d-test", 12)
+		);
+		assert_eq!(
+			"test-000012-test",
+			AnimatedTexture::fill_template("test-%06d-test", 12)
+		);
+		assert_eq!(
+			"test-0000012-test",
+			AnimatedTexture::fill_template("test-%07d-test", 12)
+		);
+		assert_eq!(
+			"test-00000012-test",
+			AnimatedTexture::fill_template("test-%08d-test", 12)
+		);
+		assert_eq!(
+			"test-12-test",
+			AnimatedTexture::fill_template("test-%1d-test", 12)
+		);
+		assert_eq!(
+			"test-12-test",
+			AnimatedTexture::fill_template("test-%2d-test", 12)
+		);
+		assert_eq!(
+			"test- 12-test",
+			AnimatedTexture::fill_template("test-%3d-test", 12)
+		);
+		assert_eq!(
+			"test-  12-test",
+			AnimatedTexture::fill_template("test-%4d-test", 12)
+		);
+		assert_eq!(
+			"test-   12-test",
+			AnimatedTexture::fill_template("test-%5d-test", 12)
+		);
+		assert_eq!(
+			"test-    12-test",
+			AnimatedTexture::fill_template("test-%6d-test", 12)
+		);
+		assert_eq!(
+			"test-     12-test",
+			AnimatedTexture::fill_template("test-%7d-test", 12)
+		);
+		assert_eq!(
+			"test-      12-test",
+			AnimatedTexture::fill_template("test-%8d-test", 12)
+		);
+		assert_eq!(
+			"test-12-test",
+			AnimatedTexture::fill_template("test-%d-test", 12)
+		);
+		assert_eq!(
+			"test-65535-test",
+			AnimatedTexture::fill_template("test-%d-test", 65535)
+		);
 		Ok(())
 	}
 }
