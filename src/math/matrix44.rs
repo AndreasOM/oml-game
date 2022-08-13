@@ -56,6 +56,14 @@ impl Matrix44 {
 		}
 	}
 
+	pub fn scaling(s: f32) -> Self {
+		Self {
+			m: [
+				s, 0.0, 0.0, 0.0, 0.0, s, 0.0, 0.0, 0.0, 0.0, s, 0.0, 0.0, 0.0, 0.0, 1.0,
+			],
+		}
+	}
+
 	pub fn multiply_vector4(&self, rhs: &Vector4) -> Vector4 {
 		let x = rhs.x;
 		let y = rhs.y;

@@ -538,6 +538,16 @@ impl Renderer {
 		lm.push_multiply(&t);
 	}
 
+	pub fn add_scaling_for_layer(&mut self, layer_id: u8, scaling: f32) {
+		// :TODO: use matrix stack
+		let lm = self
+			.layer_matrix
+			.entry(layer_id)
+			.or_insert(Matrix44Stack::default());
+		let s = Matrix44::scaling(scaling);
+		lm.push_multiply(&s);
+	}
+
 	pub fn add_vertex(&mut self, pos: &Vector2) -> u32 {
 		let lm = self
 			.layer_matrix
