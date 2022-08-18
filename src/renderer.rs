@@ -90,6 +90,7 @@ impl Color {
 }
 
 #[derive(Debug, Copy, Clone)]
+#[allow(dead_code)] // clippy gives a false positive here
 pub struct Vertex {
 	pos:        [f32; 3],
 	tex_coords: [f32; 2],
@@ -215,7 +216,7 @@ impl Renderer {
 
 		self.register_texture(texture);
 
-		let index = self.font_manager.add(font_id, font);
+		let _index = self.font_manager.add(font_id, font);
 	}
 
 	fn get_default_effect(&self) -> &Effect {

@@ -9,7 +9,7 @@ pub trait FilesystemStream {
 	fn pos(&self) -> usize;
 	fn set_pos(&mut self, pos: usize);
 	fn read_u8(&mut self) -> u8;
-	fn write_u8(&mut self, data: u8) {}
+	fn write_u8(&mut self, _data: u8) {}
 	fn is_valid(&self) -> bool;
 	fn eof(&self) -> bool;
 	fn name(&self) -> &str;

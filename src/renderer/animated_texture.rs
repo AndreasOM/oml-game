@@ -16,7 +16,7 @@ pub struct AnimatedTextureConfiguration {
 impl AnimatedTextureConfiguration {
 	pub fn new(
 		template: &str,
-		number_of_digits: i8,
+		//		number_of_digits: i8,
 		first_frame: u16,
 		last_frame: u16,
 		fps: f32,

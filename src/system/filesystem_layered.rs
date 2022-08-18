@@ -38,7 +38,7 @@ impl Filesystem for FilesystemLayered {
 	fn create(&mut self, name: &str, overwrite: bool) -> Box<dyn FilesystemStream> {
 		for fs in self.filesystems.iter_mut().rev() {
 			if fs.writable() {
-				let mut fss = fs.create(name, overwrite);
+				let fss = fs.create(name, overwrite);
 				if fss.is_valid() {
 					return fss;
 				}
