@@ -83,6 +83,15 @@ impl From<(f32, f32)> for Vector2 {
 	}
 }
 
+impl From<(f64, f64)> for Vector2 {
+	fn from(t: (f64, f64)) -> Self {
+		Self {
+			x: t.0 as f32,
+			y: t.1 as f32,
+		}
+	}
+}
+
 impl std::fmt::Debug for Vector2 {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
 		writeln!(f, "Vector2:\n{} {}", self.x, self.y,)
