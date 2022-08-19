@@ -929,3 +929,6 @@ mod texture_atlas;
 pub use texture_atlas::TextureAtlas;
 mod uniform;
 pub use uniform::Uniform;
+
+mod sixteen_segment;
+pub use sixteen_segment::SixteenSegment;
