@@ -14,6 +14,7 @@ struct Text {
 	text:  String,
 	color: Color,
 	scale: f32,
+	width: f32,
 }
 
 #[derive(Debug)]
@@ -164,7 +165,7 @@ impl DebugRenderer {
 					let s = pos.add(&s.scaled_vector2(&scale));
 					let e = pos.add(&e.scaled_vector2(&scale));
 
-					self.render_line(renderer, &s, &e, 3.0, &t.color);
+					self.render_line(renderer, &s, &e, t.width, &t.color);
 				}
 				pos = pos.add(&advance);
 			}
@@ -184,12 +185,13 @@ impl DebugRenderer {
 		};
 		self.lines.push(line);
 	}
-	pub fn add_text(&mut self, pos: &Vector2, text: &str, scale: f32, color: &Color) {
+	pub fn add_text(&mut self, pos: &Vector2, text: &str, scale: f32, width: f32, color: &Color) {
 		let text = Text {
-			text: text.to_owned(),
+			text: text.to_uppercase(),
 			pos: *pos,
 			color: *color,
 			scale,
+			width,
 		};
 
 		self.texts.push(text);

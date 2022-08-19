@@ -9,6 +9,9 @@ pub struct Rectangle {
 }
 
 impl Rectangle {
+	pub fn center(&self) -> Vector2 {
+		self.pos.add(&self.size.scaled(0.5)).clone()
+	}
 	pub fn x(&self) -> f32 {
 		self.pos.x
 	}
