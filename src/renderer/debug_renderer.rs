@@ -156,6 +156,9 @@ impl DebugRenderer {
 			let scale = Vector2::new(t.scale, t.scale);
 			let advance = Vector2::new(t.scale * (0.5 + 0.25), 0.0);
 			let mut pos = t.pos;
+			let l = t.text.len() as f32;
+			pos.x -= advance.x * 0.5*l;
+			pos.y -= 0.5 * t.scale;
 			for c in t.text.chars() {
 				//				dbg!(&c);
 				let lines = SixteenSegment::lines_for_character(c);
