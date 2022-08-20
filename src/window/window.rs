@@ -159,6 +159,7 @@ impl Window {
 							if let Some(ascii) = match virtual_code {
 								VirtualKeyCode::LBracket => Some(91),
 								VirtualKeyCode::RBracket => Some(93),
+								VirtualKeyCode::Caret    => Some(94),
 								_ => None,
 							} {
 								window_update_context.is_key_pressed[ascii] =
