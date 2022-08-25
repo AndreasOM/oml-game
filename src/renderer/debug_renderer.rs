@@ -157,7 +157,7 @@ impl DebugRenderer {
 			let advance = Vector2::new(t.scale * (0.5 + 0.25), 0.0);
 			let mut pos = t.pos;
 			let l = t.text.len() as f32;
-			pos.x -= advance.x * 0.5*l;
+			pos.x -= advance.x * 0.5 * l;
 			pos.y -= 0.5 * t.scale;
 			for c in t.text.chars() {
 				//				dbg!(&c);
@@ -201,7 +201,7 @@ impl DebugRenderer {
 	}
 
 	pub fn add_rectangle(&mut self, rect: &Rectangle, width: f32, color: &Color) {
-		let s = &rect.pos();
+		let s = &rect.bottom_left();
 		let e = s.add(&rect.size());
 
 		self.add_line(
