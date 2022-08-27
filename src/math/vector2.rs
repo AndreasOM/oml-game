@@ -7,7 +7,7 @@ pub struct Vector2 {
 }
 
 impl Vector2 {
-	pub fn new(x: f32, y: f32) -> Self {
+	pub const fn new(x: f32, y: f32) -> Self {
 		Self { x, y }
 	}
 
@@ -80,6 +80,15 @@ impl Vector2 {
 impl From<(f32, f32)> for Vector2 {
 	fn from(t: (f32, f32)) -> Self {
 		Self { x: t.0, y: t.1 }
+	}
+}
+
+impl From<(f64, f64)> for Vector2 {
+	fn from(t: (f64, f64)) -> Self {
+		Self {
+			x: t.0 as f32,
+			y: t.1 as f32,
+		}
 	}
 }
 

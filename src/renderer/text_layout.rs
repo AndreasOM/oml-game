@@ -1,7 +1,7 @@
 use crate::math::Matrix32;
 use crate::math::Vector2;
-use crate::renderer::debug_renderer;
-use crate::renderer::{Color, Font};
+//use crate::renderer::debug_renderer;
+use crate::renderer::Font;
 
 #[derive(Debug)]
 pub struct TextLayoutQuad {
@@ -39,8 +39,8 @@ impl TextLayout {
 
 		todo!("die");
 		*/
-		let mut bottom_y = f32::MAX;
-		let mut top_y = f32::MIN;
+		//		let _bottom_y = f32::MAX;
+		//		let _top_y = f32::MIN;
 		self.size.y = font.size();
 		let mut line_count = 1;
 		for c in text.bytes() {

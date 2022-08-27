@@ -6,7 +6,16 @@ use lazy_static::lazy_static;
 use crate::math::Matrix22;
 use crate::math::Rectangle;
 use crate::math::Vector2;
-use crate::renderer::{Color, Renderer};
+use crate::renderer::{Color, Renderer, SixteenSegment};
+
+#[derive(Debug)]
+struct Text {
+	pos:   Vector2,
+	text:  String,
+	color: Color,
+	scale: f32,
+	width: f32,
+}
 
 #[derive(Debug)]
 struct Line {
@@ -21,6 +30,7 @@ pub struct DebugRenderer {
 	layer:  u8,
 	effect: u16,
 	lines:  Vec<Line>,
+	texts:  Vec<Text>,
 }
 
 //pub static mut DEFAULT_DEBUGRENDERER: Option< Arc< Mutex< DebugRenderer > > > = None;
@@ -86,14 +96,51 @@ impl DebugRenderer {
 			layer,
 			effect,
 			lines: Vec::new(),
+			texts: Vec::new(),
 		}
 	}
 
 	pub fn begin_frame(&mut self) {
 		self.lines.clear();
+		self.texts.clear();
 	}
 	pub fn end_frame(&mut self) {}
 
+	fn render_line(
+		&self,
+		renderer: &mut Renderer,
+		s: &Vector2,
+		e: &Vector2,
+		width: f32,
+		color: &Color,
+	) {
+		let v0 = s;
+		let v1 = e;
+		let v01 = v1.sub(&v0).normalized();
+		let vp = Vector2::new(-v01.y, v01.x);
+		//			let vp = Vector2::new( 0.0, 1.0 );
+		let vl = vp.scaled(0.5 * width);
+		let vr = vp.scaled(-0.5 * width);
+
+		let v0 = s.add(&vr);
+		let v1 = e.add(&vr);
+
+		let v2 = s.add(&vl);
+		let v3 = e.add(&vl);
+
+		//			println!("{:?} {:?} \n{:?} {:?} {:?} {:?} \n{:?} {:?} {:?} ",&l.start, &l.end, &v0,&v1,&v2, &v3, &v01, &vl, &vr);
+		//			println!("{} + {} = {}", l.start.y, vl.y, v2.y );
+
+		renderer.set_color(&color);
+
+		let v0 = renderer.add_vertex(&v0);
+		let v1 = renderer.add_vertex(&v1);
+		let v2 = renderer.add_vertex(&v2);
+		let v3 = renderer.add_vertex(&v3);
+
+		renderer.add_triangle(v0, v1, v2);
+		renderer.add_triangle(v2, v1, v3);
+	}
 	pub fn render(&self, renderer: &mut Renderer) {
 		//		println!("Debug Render rendering");
 		//		println!("{} lines", self.lines.len());
@@ -101,33 +148,33 @@ impl DebugRenderer {
 		renderer.use_layer(self.layer);
 		renderer.use_effect(self.effect);
 		for l in &self.lines {
-			let v0 = l.start;
-			let v1 = l.end;
-			let v01 = v1.sub(&v0).normalized();
-			let vp = Vector2::new(-v01.y, v01.x);
-			//			let vp = Vector2::new( 0.0, 1.0 );
-			let vl = vp.scaled(0.5 * l.width);
-			let vr = vp.scaled(-0.5 * l.width);
-
-			let v0 = l.start.add(&vr);
-			let v1 = l.end.add(&vr);
-
-			let v2 = l.start.add(&vl);
-			let v3 = l.end.add(&vl);
-
-			//			println!("{:?} {:?} \n{:?} {:?} {:?} {:?} \n{:?} {:?} {:?} ",&l.start, &l.end, &v0,&v1,&v2, &v3, &v01, &vl, &vr);
-			//			println!("{} + {} = {}", l.start.y, vl.y, v2.y );
-
-			renderer.set_color(&l.color);
-
-			let v0 = renderer.add_vertex(&v0);
-			let v1 = renderer.add_vertex(&v1);
-			let v2 = renderer.add_vertex(&v2);
-			let v3 = renderer.add_vertex(&v3);
-
-			renderer.add_triangle(v0, v1, v2);
-			renderer.add_triangle(v2, v1, v3);
+			self.render_line(renderer, &l.start, &l.end, l.width, &l.color);
 		}
+
+		//		dbg!(&self.texts);
+		for t in &self.texts {
+			let scale = Vector2::new(t.scale, t.scale);
+			let advance = Vector2::new(t.scale * (0.5 + 0.25), 0.0);
+			let mut pos = t.pos;
+			let l = t.text.len() as f32;
+			pos.x -= advance.x * 0.5 * l;
+			pos.y -= 0.5 * t.scale;
+			for c in t.text.chars() {
+				//				dbg!(&c);
+				let lines = SixteenSegment::lines_for_character(c);
+				//				dbg!(&lines);
+				for (s, e) in lines {
+					//					dbg!( &s, &e );
+					let s = pos.add(&s.scaled_vector2(&scale));
+					let e = pos.add(&e.scaled_vector2(&scale));
+
+					self.render_line(renderer, &s, &e, t.width, &t.color);
+				}
+				pos = pos.add(&advance);
+			}
+		}
+
+		//		todo!("die");
 	}
 
 	pub fn add_line(&mut self, start: &Vector2, end: &Vector2, width: f32, color: &Color) {
@@ -141,8 +188,20 @@ impl DebugRenderer {
 		};
 		self.lines.push(line);
 	}
+	pub fn add_text(&mut self, pos: &Vector2, text: &str, scale: f32, width: f32, color: &Color) {
+		let text = Text {
+			text: text.to_uppercase(),
+			pos: *pos,
+			color: *color,
+			scale,
+			width,
+		};
+
+		self.texts.push(text);
+	}
+
 	pub fn add_rectangle(&mut self, rect: &Rectangle, width: f32, color: &Color) {
-		let s = &rect.pos();
+		let s = &rect.bottom_left();
 		let e = s.add(&rect.size());
 
 		self.add_line(

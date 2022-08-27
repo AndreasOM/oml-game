@@ -32,10 +32,10 @@ impl Effect {
 	) -> Self {
 		let mut program = Program::new();
 
-		let mut vsf = system.default_filesystem_mut().open(&vertex_shader_name);
+		let mut vsf = system.default_filesystem_mut().open(vertex_shader_name);
 		let vs = vsf.read_as_string();
 
-		let mut fsf = system.default_filesystem_mut().open(&fragment_shader_name);
+		let mut fsf = system.default_filesystem_mut().open(fragment_shader_name);
 		let fs = fsf.read_as_string();
 
 		program.add_shader(ShaderType::Vertex, &vs);

@@ -28,6 +28,10 @@ impl Serializer {
 		}
 	}
 
+	pub fn any_error(&self) -> bool {
+		self.any_error
+	}
+
 	pub fn serialize_u8(&mut self, data: &mut u8) {
 		self.byte_count += 1;
 		match self.mode {

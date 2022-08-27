@@ -36,6 +36,15 @@ impl Color {
 		}
 	}
 
+	pub fn black() -> Self {
+		Self {
+			r: 0.0,
+			g: 0.0,
+			b: 0.0,
+			a: 1.0,
+		}
+	}
+
 	pub fn red() -> Self {
 		Self {
 			r: 1.0,
@@ -60,6 +69,9 @@ impl Color {
 			a: 1.0,
 		}
 	}
+	pub fn rainbow(t: f32) -> Self {
+		Self::from_hsv(t, 1.0, 1.0)
+	}
 	pub fn from_rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
 		Self { r, g, b, a }
 	}
@@ -71,6 +83,36 @@ impl Color {
 			b: a,
 			a,
 		}
+	}
+
+	pub fn from_hsv(h: f32, s: f32, v: f32) -> Self {
+		let a = 1.0;
+
+		let (r, g, b) = if s <= 0.0 {
+			// zero saturation, pure grey
+			(v, v, v)
+		} else {
+			let mut hh = h % 360.0;
+			hh /= 60.0;
+
+			let i = hh.floor() as usize; // which of the 6 segments?
+			let ff = hh - i as f32; // fraction in segment
+
+			let p = v * (1.0 - s);
+			let q = v * (1.0 - (s * ff));
+			let t = v * (1.0 - (s * (1.0 - ff)));
+
+			match i {
+				0 => (v, t, p),
+				1 => (q, v, p),
+				2 => (p, v, t),
+				3 => (p, q, v),
+				4 => (t, p, v),
+				5 | _ => (v, p, q),
+			}
+		};
+
+		Self { r, g, b, a }
 	}
 
 	pub fn as_rgba8(&self) -> u32 {
@@ -90,6 +132,7 @@ impl Color {
 }
 
 #[derive(Debug, Copy, Clone)]
+#[allow(dead_code)] // clippy gives a false positive here
 pub struct Vertex {
 	pos:        [f32; 3],
 	tex_coords: [f32; 2],
@@ -215,7 +258,7 @@ impl Renderer {
 
 		self.register_texture(texture);
 
-		let index = self.font_manager.add(font_id, font);
+		let _index = self.font_manager.add(font_id, font);
 	}
 
 	fn get_default_effect(&self) -> &Effect {
@@ -928,3 +971,6 @@ mod texture_atlas;
 pub use texture_atlas::TextureAtlas;
 mod uniform;
 pub use uniform::Uniform;
+
+mod sixteen_segment;
+pub use sixteen_segment::SixteenSegment;

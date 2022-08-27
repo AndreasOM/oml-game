@@ -32,7 +32,7 @@ impl Matrix44Stack {
 			_ => panic!("Tried to pop from empty Matrix44Stack"),
 		};
 
-		let t = std::mem::replace(&mut self.top, t);
+		let _t = std::mem::replace(&mut self.top, t);
 	}
 }
 

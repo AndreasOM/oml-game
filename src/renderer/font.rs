@@ -55,14 +55,14 @@ impl Font {
 		f
 	}
 	pub fn recalc_from_matrix(&mut self, texsize: u32) {
-		let mut hi_code = 0;
+		// let mut hi_code = 0;
 		let mut hi_h = 0;
 		for g in &mut self.glyphs {
 			g.recalc_from_matrix(texsize);
 			let y = (g.height as f32 - g.y_offset) as u32;
 			if y > hi_h {
 				hi_h = y;
-				hi_code = g.codepoint;
+				// hi_code = g.codepoint;
 				//				dbg!(&g);
 			}
 		}

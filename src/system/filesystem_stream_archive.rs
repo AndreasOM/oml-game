@@ -23,6 +23,10 @@ impl FilesystemStreamArchive {
 	pub fn mark_invalid(&mut self) {
 		self.valid = false;
 	}
+
+	pub fn crc(&self) -> u32 {
+		self.crc
+	}
 }
 
 impl FilesystemStream for FilesystemStreamArchive {

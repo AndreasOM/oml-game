@@ -57,7 +57,7 @@ impl FilesystemStreamDisk {
 			.open(&s.filename);
 		//		dbg!(&file);
 		match file {
-			Ok(mut f) => {
+			Ok(f) => {
 				s.size = 0;
 				/*
 				let f = BufReader::new(f);
