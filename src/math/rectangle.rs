@@ -57,6 +57,7 @@ impl Rectangle {
 
 	pub fn with_offset(mut self, offset: &Vector2) -> Self {
 		self.bottom_left = self.bottom_left.add(offset);
+		self.center = self.center.add(offset);
 		self
 	}
 
