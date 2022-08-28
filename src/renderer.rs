@@ -1,4 +1,5 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
+use std::sync::mpsc;
 
 pub mod debug_renderer;
 
@@ -167,6 +168,11 @@ impl Vertex {
 	}
 }
 
+#[derive(Debug)]
+enum Command {
+	LoadTexture(u16, String),
+}
+
 const MAX_TEXTURE_CHANNELS: usize = 4;
 #[derive(Debug)]
 pub struct Renderer {
@@ -200,6 +206,9 @@ pub struct Renderer {
 	size:          Vector2,
 	viewport_pos:  Vector2,
 	viewport_size: Vector2,
+
+	command_rx: Option<mpsc::Receiver<Command>>,
+	command_tx: Option<mpsc::Sender<Command>>,
 }
 
 impl Renderer {
@@ -232,6 +241,86 @@ impl Renderer {
 			size:          Vector2::zero(),
 			viewport_pos:  Vector2::zero(),
 			viewport_size: Vector2::zero(),
+
+			command_rx: None,
+			command_tx: None,
+		}
+	}
+
+	pub fn update(&mut self, system: &mut System) {
+		// :TODO: this could be running in a thread
+
+		{
+			let mut commands = VecDeque::new();
+
+			if let Some(rx) = &self.command_rx {
+				let mut commands_to_handle = 1000; // :TODO: tune for blocking vs rendering with wrong texture
+				while commands_to_handle > 0 {
+					match rx.try_recv() {
+						Ok(cmd) => {
+							commands.push_back(cmd);
+							commands_to_handle -= 1;
+						},
+						Err(_e) => {
+							commands_to_handle = 0;
+						},
+					}
+				}
+			}
+
+			for cmd in commands {
+				match cmd {
+					Command::LoadTexture(depth, name) => {
+						if depth < 16 {
+							// :TODO: could be (almost) any limit
+							match self.texture_manager.find_index(|t: &Texture| {
+								//			dbg!(&t.name(), &name);
+								t.name() == name
+							}) {
+								None => {
+									println!("Trying to load {} [depth {}]", &name, depth);
+									// try if it is a texture reference, aka .omtr
+									let name_omtr = format!("{}.omtr", &name);
+									let dfs = system.default_filesystem_mut();
+
+									if dfs.exists(&name_omtr) {
+										println!("Found reference!");
+										let mut f = dfs.open(&name_omtr);
+										let mut line = Vec::new();
+
+										let mut b = 0;
+										while !f.eof() {
+											b = f.read_u8();
+											if b == 0x0d {
+												break;
+											};
+
+											line.push(b);
+										}
+
+										let line = String::from_utf8(line.clone()).unwrap();
+
+										dbg!(&line);
+
+										// just queue it as a command, to allow reference chains ... 0mg
+										if let Some(tx) = &self.command_tx {
+											let _ = tx.send(Command::LoadTexture(depth + 1, line));
+										}
+									} else {
+										let cnt = TextureAtlas::load_all(system, self, &name);
+										if cnt == 0 {
+											println!("Warning: Tried to load atlas {}, but got no textures.", &name);
+										}
+									}
+								},
+								Some(i) => {
+									// we already have it, so do nothing
+								},
+							};
+						};
+					},
+				};
+			}
 		}
 	}
 
@@ -307,10 +396,19 @@ impl Renderer {
 		// ensure we have one texture
 		self.register_texture(Texture::create_canvas("[]", 2));
 
+		// setup channels for async handling, e.g. texture loading
+		let (tx, rx) = mpsc::channel();
+
+		self.command_tx = Some(tx);
+		self.command_rx = Some(rx);
+
 		Ok(())
 	}
 
-	pub fn teardown(&mut self) {}
+	pub fn teardown(&mut self) {
+		self.command_rx = None;
+		self.command_tx = None;
+	}
 
 	pub fn begin_frame(&mut self) {
 		self.vertices.clear();
@@ -555,7 +653,17 @@ impl Renderer {
 			//			dbg!(&t.name(), &name);
 			t.name() == name
 		}) {
-			None => todo!("Texture not found {}. User error?", &name),
+			None => {
+				//todo!("Texture not found {}. User error?", &name),
+				println!(
+					"Texture {} not found, trying to load. Using default.",
+					&name
+				);
+				self.active_textures[channel as usize] = Some(0);
+				if let Some(tx) = &self.command_tx {
+					let _ = tx.send(Command::LoadTexture(0, name.to_string()));
+				}
+			},
 			Some(i) => {
 				self.active_textures[channel as usize] = Some(i as u16);
 				self.switch_active_material_if_needed();
