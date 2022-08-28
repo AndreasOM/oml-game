@@ -36,6 +36,20 @@ impl Rectangle {
 	pub fn height(&self) -> f32 {
 		self.size.y
 	}
+
+	pub fn top(&self) -> f32 {
+		self.bottom_left.y + self.size.y
+	}
+	pub fn bottom(&self) -> f32 {
+		self.bottom_left.y
+	}
+	pub fn right(&self) -> f32 {
+		self.bottom_left.x + self.size.x
+	}
+	pub fn left(&self) -> f32 {
+		self.bottom_left.x
+	}
+
 	/* :DEPRECATED:
 		pub fn set_x(&mut self, x: f32) {
 			self.bottom_left.x = x;
