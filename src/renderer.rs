@@ -1,5 +1,6 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::mpsc;
+use std::sync::RwLock;
 
 pub mod debug_renderer;
 
@@ -207,8 +208,10 @@ pub struct Renderer {
 	viewport_pos:  Vector2,
 	viewport_size: Vector2,
 
+	// very tempted to move this whole logic into seperate struct
 	command_rx: Option<mpsc::Receiver<Command>>,
 	command_tx: Option<mpsc::Sender<Command>>,
+	textures_loading: RwLock< HashSet< String > >,
 }
 
 impl Renderer {
@@ -244,6 +247,8 @@ impl Renderer {
 
 			command_rx: None,
 			command_tx: None,
+
+			textures_loading: RwLock::new( HashSet::new() ),
 		}
 	}
 
@@ -278,13 +283,12 @@ impl Renderer {
 								t.name() == name
 							}) {
 								None => {
-									println!("Trying to load {} [depth {}]", &name, depth);
+									println!("[{:8}] Trying to load {} [depth {}]", self.frame, &name, depth);
 									// try if it is a texture reference, aka .omtr
 									let name_omtr = format!("{}.omtr", &name);
 									let dfs = system.default_filesystem_mut();
 
 									if dfs.exists(&name_omtr) {
-										println!("Found reference!");
 										let mut f = dfs.open(&name_omtr);
 										let mut line = Vec::new();
 
@@ -300,7 +304,7 @@ impl Renderer {
 
 										let line = String::from_utf8(line.clone()).unwrap();
 
-										dbg!(&line);
+										println!("\tFound reference! -> >{}<", &line);
 
 										// just queue it as a command, to allow reference chains ... 0mg
 										if let Some(tx) = &self.command_tx {
@@ -311,10 +315,12 @@ impl Renderer {
 										if cnt == 0 {
 											println!("Warning: Tried to load atlas {}, but got no textures.", &name);
 										}
+										// :TODO: handle non atlas cases (not supported right now)
 									}
 								},
 								Some(i) => {
 									// we already have it, so do nothing
+									// :TODO: if we ever ref count textures this *might* be the place to increase it
 								},
 							};
 						};
@@ -656,7 +662,8 @@ impl Renderer {
 			None => {
 				//todo!("Texture not found {}. User error?", &name),
 				println!(
-					"Texture {} not found, trying to load. Using default.",
+					"[{:8}] Texture {} not found, trying to load. Using default.",
+					self.frame,
 					&name
 				);
 				self.active_textures[channel as usize] = Some(0);
