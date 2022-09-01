@@ -1062,6 +1062,10 @@ mod gl {
 
 mod effect;
 pub use effect::Effect;
+mod effect_id;
+pub use effect_id::EffectId;
+pub use effect_id::EffectIdFactory;
+
 mod font;
 pub use font::Font;
 mod material;

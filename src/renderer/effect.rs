@@ -1,4 +1,5 @@
 use crate::renderer::{
+	EffectId,
 	//	Debug,
 	//	gl,
 	Program,
