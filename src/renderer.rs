@@ -291,7 +291,7 @@ impl Renderer {
 										let mut b = 0;
 										while !f.eof() {
 											b = f.read_u8();
-											if b == 0x0d {
+											if b == 0x0a || b == 0x0d {
 												break;
 											};
 
