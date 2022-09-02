@@ -12,14 +12,12 @@ pub struct System {
 }
 
 impl Default for System {
-
-	fn default() -> Self { 
+	fn default() -> Self {
 		Self {
 			default_filesystem:  Box::new(FilesystemEmpty::new()),
 			savegame_filesystem: Box::new(FilesystemEmpty::new()),
 		}
 	}
-
 }
 
 impl System {

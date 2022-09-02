@@ -209,9 +209,9 @@ pub struct Renderer {
 	viewport_size: Vector2,
 
 	// very tempted to move this whole logic into seperate struct
-	command_rx: Option<mpsc::Receiver<Command>>,
-	command_tx: Option<mpsc::Sender<Command>>,
-	textures_loading: RwLock< HashSet< String > >,
+	command_rx:       Option<mpsc::Receiver<Command>>,
+	command_tx:       Option<mpsc::Sender<Command>>,
+	textures_loading: RwLock<HashSet<String>>,
 }
 
 impl Renderer {
@@ -248,7 +248,7 @@ impl Renderer {
 			command_rx: None,
 			command_tx: None,
 
-			textures_loading: RwLock::new( HashSet::new() ),
+			textures_loading: RwLock::new(HashSet::new()),
 		}
 	}
 
@@ -283,7 +283,10 @@ impl Renderer {
 								t.name() == name
 							}) {
 								None => {
-									println!("[{:8}] Trying to load {} [depth {}]", self.frame, &name, depth);
+									println!(
+										"[{:8}] Trying to load {} [depth {}]",
+										self.frame, &name, depth
+									);
 									// try if it is a texture reference, aka .omtr
 									let name_omtr = format!("{}.omtr", &name);
 									let dfs = system.default_filesystem_mut();
@@ -663,8 +666,7 @@ impl Renderer {
 				//todo!("Texture not found {}. User error?", &name),
 				println!(
 					"[{:8}] Texture {} not found, trying to load. Using default.",
-					self.frame,
-					&name
+					self.frame, &name
 				);
 				self.active_textures[channel as usize] = Some(0);
 				if let Some(tx) = &self.command_tx {

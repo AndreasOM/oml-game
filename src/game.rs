@@ -23,13 +23,10 @@ impl Game {
 		window.run(move |wuc| {
 			//		dbg!(&wuc);
 			match app.update(wuc) {
-				Ok(_) => {
-
-				},
-				Err( _e ) => {
-
+				Ok(_) => {},
+				Err(_e) => {
 					return true;
-				}
+				},
 			}
 			app.render();
 			if app.is_done() {
@@ -39,7 +36,7 @@ impl Game {
 			} else {
 				false
 			}
-		} );
+		});
 
 		window.teardown();
 
