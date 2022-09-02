@@ -8,6 +8,8 @@ pub trait App {
 	fn is_done(&self) -> bool {
 		true
 	}
-	fn update(&mut self, _wuc: &mut WindowUpdateContext) {}
+	fn update(&mut self, _wuc: &mut WindowUpdateContext) -> anyhow::Result<()> {
+		Ok(())
+	}
 	fn render(&mut self) {}
 }
