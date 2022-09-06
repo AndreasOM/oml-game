@@ -2,6 +2,7 @@ use std::sync::Arc;
 use std::sync::Mutex;
 
 use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 
 use crate::math::Matrix22;
 use crate::math::Rectangle;
@@ -36,10 +37,15 @@ pub struct DebugRenderer {
 //pub static mut DEFAULT_DEBUGRENDERER: Option< Arc< Mutex< DebugRenderer > > > = None;
 //pub static DEFAULT_DEBUGRENDERER: Arc< Mutex < Option< DebugRenderer > > > = Arc::new( Mutex::new( None ) );
 
+/*
 lazy_static! {
 //    static ref ARRAY: Mutex<Vec<u8>> = Mutex::new(vec![]);
 	pub static ref DEFAULT_DEBUGRENDERER: Arc< Mutex < Option< DebugRenderer > > > = Arc::new( Mutex::new( None ) );
 }
+*/
+
+static DEFAULT_DEBUGRENDERER: Lazy<Arc<Mutex<Option<DebugRenderer>>>> =
+	Lazy::new(|| Arc::new(Mutex::new(None)));
 
 // :TODO: make these macros that compiles to NOP
 pub fn debug_renderer_toggle(layer_id: u8, effect_id: u16) {
