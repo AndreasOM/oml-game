@@ -2,6 +2,8 @@ use std::collections::{HashMap, HashSet, VecDeque};
 use std::sync::mpsc;
 use std::sync::RwLock;
 
+use backtrace::Backtrace;
+
 pub mod debug_renderer;
 
 //use crate::renderer::debug_renderer;
@@ -208,6 +210,7 @@ pub struct Renderer {
 	viewport_pos:  Vector2,
 	viewport_size: Vector2,
 
+	backtrace_on_missing: bool,
 	// very tempted to move this whole logic into seperate struct
 	command_rx:       Option<mpsc::Receiver<Command>>,
 	command_tx:       Option<mpsc::Sender<Command>>,
@@ -244,6 +247,8 @@ impl Renderer {
 			size:          Vector2::zero(),
 			viewport_pos:  Vector2::zero(),
 			viewport_size: Vector2::zero(),
+
+			backtrace_on_missing: false,
 
 			command_rx: None,
 			command_tx: None,
@@ -370,7 +375,11 @@ impl Renderer {
 		match self.effects.get(&self.active_effect_id) {
 			Some(e) => e,
 			None => {
-				println!("No active render Effect -> using default");
+				println!("No active render Effect found for {} -> using default", &self.active_effect_id );
+				if self.backtrace_on_missing {
+					let bt = Backtrace::new();
+    				println!("{:?}", bt);
+    			}
 				self.get_default_effect()
 			},
 		}
