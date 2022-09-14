@@ -212,9 +212,9 @@ pub struct Renderer {
 
 	backtrace_on_missing: bool,
 	// very tempted to move this whole logic into seperate struct
-	command_rx:       Option<mpsc::Receiver<Command>>,
-	command_tx:       Option<mpsc::Sender<Command>>,
-	textures_loading: RwLock<HashSet<String>>,
+	command_rx:           Option<mpsc::Receiver<Command>>,
+	command_tx:           Option<mpsc::Sender<Command>>,
+	textures_loading:     RwLock<HashSet<String>>,
 }
 
 impl Renderer {
@@ -375,11 +375,14 @@ impl Renderer {
 		match self.effects.get(&self.active_effect_id) {
 			Some(e) => e,
 			None => {
-				println!("No active render Effect found for {} -> using default", &self.active_effect_id );
+				println!(
+					"No active render Effect found for {} -> using default",
+					&self.active_effect_id
+				);
 				if self.backtrace_on_missing {
 					let bt = Backtrace::new();
-    				println!("{:?}", bt);
-    			}
+					println!("{:?}", bt);
+				}
 				self.get_default_effect()
 			},
 		}
