@@ -1,6 +1,5 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, VecDeque};
 use std::sync::mpsc;
-use std::sync::RwLock;
 
 use backtrace::Backtrace;
 
@@ -214,7 +213,7 @@ pub struct Renderer {
 	// very tempted to move this whole logic into seperate struct
 	command_rx:           Option<mpsc::Receiver<Command>>,
 	command_tx:           Option<mpsc::Sender<Command>>,
-	textures_loading:     RwLock<HashSet<String>>,
+	//textures_loading:     RwLock<HashSet<String>>,
 }
 
 impl Renderer {
@@ -252,8 +251,7 @@ impl Renderer {
 
 			command_rx: None,
 			command_tx: None,
-
-			textures_loading: RwLock::new(HashSet::new()),
+			//textures_loading: RwLock::new(HashSet::new()),
 		}
 	}
 
@@ -300,9 +298,8 @@ impl Renderer {
 										let mut f = dfs.open(&name_omtr);
 										let mut line = Vec::new();
 
-										let mut b = 0;
 										while !f.eof() {
-											b = f.read_u8();
+											let b = f.read_u8();
 											if b == 0x0a || b == 0x0d {
 												break;
 											};
@@ -326,7 +323,7 @@ impl Renderer {
 										// :TODO: handle non atlas cases (not supported right now)
 									}
 								},
-								Some(i) => {
+								Some(_i) => {
 									// we already have it, so do nothing
 									// :TODO: if we ever ref count textures this *might* be the place to increase it
 								},
