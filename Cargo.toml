@@ -15,6 +15,7 @@ categories = ["multimedia","game-development"]
 
 [dependencies]
 anyhow = "1.0.58"
+backtrace = "0.3.66"
 chrono = "0.4.19"
 crc = "3.0.0"
 derivative = "2.2.0"

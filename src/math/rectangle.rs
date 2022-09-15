@@ -118,6 +118,14 @@ impl Rectangle {
 			a => todo!("Implement hflip for anchor {:?}", a),
 		};
 	}
+
+	pub fn contains(&self, pos: &Vector2) -> bool {
+		self.bottom_left.x <= pos.x
+			&& self.bottom_left.y <= pos.y
+			&& self.bottom_left.x + self.size.x >= pos.x
+			&& self.bottom_left.y + self.size.y >= pos.y
+	}
+
 	/* :DEPRECATED:
 		pub fn with_x(mut self, x: f32) -> Self {
 			self.bottom_left.x = x;
@@ -252,5 +260,21 @@ mod tests {
 		assert_eq!(r.center().y, 0.0);
 		assert_eq!(r.bottom_left().x, -5.0);
 		assert_eq!(r.bottom_left().y, -10.0);
+	}
+
+	#[test]
+	fn check_if_it_contains_a_point() {
+		let r: Rectangle = Rectangle::default()
+			.with_center(&Vector2::new(0.0, 0.0))
+			.with_size(&Vector2::new(10.0, 20.0));
+		assert_eq!(r.contains(&Vector2::new(0.0, 0.0)), true);
+		assert_eq!(r.contains(&Vector2::new(-5.0, 0.0)), true);
+		assert_eq!(r.contains(&Vector2::new(-6.0, 0.0)), false);
+		assert_eq!(r.contains(&Vector2::new(5.0, 0.0)), true);
+		assert_eq!(r.contains(&Vector2::new(6.0, 0.0)), false);
+		assert_eq!(r.contains(&Vector2::new(0.0, -10.0)), true);
+		assert_eq!(r.contains(&Vector2::new(0.0, -11.0)), false);
+		assert_eq!(r.contains(&Vector2::new(0.0, 10.0)), true);
+		assert_eq!(r.contains(&Vector2::new(0.0, 11.0)), false);
 	}
 }
