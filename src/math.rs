@@ -17,3 +17,6 @@ pub use vector4::Vector4;
 
 mod rectangle;
 pub use rectangle::Rectangle;
+
+mod cardinals;
+pub use cardinals::Cardinals;
