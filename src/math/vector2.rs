@@ -94,6 +94,6 @@ impl From<(f64, f64)> for Vector2 {
 
 impl std::fmt::Debug for Vector2 {
 	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-		writeln!(f, "Vector2:\n{} {}", self.x, self.y,)
+		write!(f, "Vector2: [{}, {}]", self.x, self.y,)
 	}
 }
