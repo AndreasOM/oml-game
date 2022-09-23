@@ -29,7 +29,7 @@ struct Line {
 pub struct DebugRenderer {
 	layer:  u8,
 	effect: u16,
-	offset:	Vector2,
+	offset: Vector2,
 	lines:  Vec<Line>,
 	texts:  Vec<Text>,
 }
@@ -217,8 +217,8 @@ impl DebugRenderer {
 	pub fn add_line(&mut self, start: &Vector2, end: &Vector2, width: f32, color: &Color) {
 		let line = {
 			Line {
-				start: start.add( &self.offset ),
-				end: end.add( &self.offset ),
+				start: start.add(&self.offset),
+				end: end.add(&self.offset),
 				width,
 				color: *color,
 			}

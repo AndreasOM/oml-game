@@ -1,9 +1,9 @@
 use crate::math::Vector2;
 
-#[derive(Debug,Default)]
+#[derive(Debug, Default)]
 
 pub struct Circle {
-	radius:	f32,
+	radius: f32,
 	center: Vector2,
 }
 
@@ -12,11 +12,11 @@ impl Circle {
 		Default::default()
 	}
 
-	pub fn center( &self ) -> &Vector2 {
+	pub fn center(&self) -> &Vector2 {
 		&self.center
 	}
 
-	pub fn radius( &self ) -> f32 {
+	pub fn radius(&self) -> f32 {
 		self.radius
 	}
 
@@ -31,7 +31,7 @@ impl Circle {
 	}
 
 	pub fn overlaps(&self, other: &Circle) -> bool {
-		let d = self.center.sub( &other.center );
+		let d = self.center.sub(&other.center);
 		let l = d.length();
 		let r = self.radius + other.radius;
 
