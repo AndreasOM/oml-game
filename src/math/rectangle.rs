@@ -1,6 +1,7 @@
 use derive_getters::Getters;
 
 use crate::math::Cardinals;
+use crate::math::Circle;
 use crate::math::Vector2;
 
 #[derive(Debug, Default, Copy, Clone, PartialEq)]
@@ -82,6 +83,17 @@ impl Rectangle {
 
 		self.recalc_from_center();
 		self
+	}
+
+	pub fn calculate_bounding_circle(&self) -> Circle {
+
+		let s = self.size();
+		let hx = s.x*0.5;
+		let hy = s.y*0.5;
+		let r = ( hx*hx + hy*hy ).sqrt();
+		Circle::default()
+			.with_center( self.center() )
+			.with_radius( r )
 	}
 
 	fn recalc_from_center(&mut self) {

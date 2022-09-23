@@ -93,6 +93,15 @@ pub fn debug_renderer_add_frame(pos: &Vector2, size: &Vector2, width: f32, color
 	}
 }
 
+pub fn debug_renderer_add_circle(pos: &Vector2, radius: f32, width: f32, color: &Color) {
+	let mut lock = DEFAULT_DEBUGRENDERER.try_lock();
+	if let Ok(ref mut dr) = lock {
+		if let Some(dr) = &mut **dr {
+			dr.add_circle(pos, radius, width, color);
+		}
+	}
+}
+
 pub fn debug_renderer_begin_frame() {
 	let mut lock = DEFAULT_DEBUGRENDERER.try_lock();
 	if let Ok(ref mut dr) = lock {
