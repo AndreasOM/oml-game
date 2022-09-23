@@ -29,6 +29,7 @@ struct Line {
 pub struct DebugRenderer {
 	layer:  u8,
 	effect: u16,
+	offset:	Vector2,
 	lines:  Vec<Line>,
 	texts:  Vec<Text>,
 }
@@ -54,6 +55,14 @@ pub fn debug_renderer_toggle(layer_id: u8, effect_id: u16) {
 			**dr = Some(DebugRenderer::new(layer_id, effect_id));
 		} else {
 			**dr = None;
+		}
+	}
+}
+pub fn debug_renderer_set_offset(offset: &Vector2) {
+	let mut lock = DEFAULT_DEBUGRENDERER.try_lock();
+	if let Ok(ref mut dr) = lock {
+		if let Some(dr) = &mut **dr {
+			dr.set_offset(offset);
 		}
 	}
 }
@@ -109,6 +118,7 @@ impl DebugRenderer {
 		Self {
 			layer,
 			effect,
+			offset: Vector2::zero(),
 			lines: Vec::new(),
 			texts: Vec::new(),
 		}
@@ -119,6 +129,10 @@ impl DebugRenderer {
 		self.texts.clear();
 	}
 	pub fn end_frame(&mut self) {}
+
+	pub fn set_offset(&mut self, offset: &Vector2) {
+		self.offset = *offset;
+	}
 
 	fn render_line(
 		&self,
@@ -194,8 +208,8 @@ impl DebugRenderer {
 	pub fn add_line(&mut self, start: &Vector2, end: &Vector2, width: f32, color: &Color) {
 		let line = {
 			Line {
-				start: *start,
-				end: *end,
+				start: start.add( &self.offset ),
+				end: end.add( &self.offset ),
 				width,
 				color: *color,
 			}
