@@ -1,5 +1,7 @@
 use derive_getters::Getters;
 
+use crate::math::Cardinals;
+use crate::math::Circle;
 use crate::math::Vector2;
 
 #[derive(Debug, Default, Copy, Clone, PartialEq)]
@@ -83,6 +85,14 @@ impl Rectangle {
 		self
 	}
 
+	pub fn calculate_bounding_circle(&self) -> Circle {
+		let s = self.size();
+		let hx = s.x * 0.5;
+		let hy = s.y * 0.5;
+		let r = (hx * hx + hy * hy).sqrt();
+		Circle::default().with_center(self.center()).with_radius(r)
+	}
+
 	fn recalc_from_center(&mut self) {
 		self.bottom_left = self.center.add(&self.size.scaled(-0.5));
 	}
@@ -124,6 +134,100 @@ impl Rectangle {
 			&& self.bottom_left.y <= pos.y
 			&& self.bottom_left.x + self.size.x >= pos.x
 			&& self.bottom_left.y + self.size.y >= pos.y
+	}
+
+	pub fn would_collide(
+		&self,
+		start: &Vector2,
+		end: &Vector2,
+		other: &Rectangle,
+	) -> Option<(f32, Cardinals)> {
+		let rs = other.clone().with_center(start);
+		let re = other.clone().with_center(end);
+		let vert = if start.y > end.y {
+			// going down
+			if re.bottom() < self.top() && rs.bottom() > self.top() {
+				let ay = self.top();
+
+				let p = (ay - rs.bottom()) / (re.bottom() - rs.bottom());
+				let full = end.sub(&start).scaled(p);
+				let actual = start.add(&full);
+				let actual_rect = other.clone().with_center(&actual);
+				if actual_rect.right() > self.left() && actual_rect.left() < self.right() {
+					Some((p, Cardinals::Bottom))
+				} else {
+					None
+				}
+			} else {
+				None
+			}
+		} else {
+			// going up
+			if re.top() > self.bottom() && rs.top() < self.bottom() {
+				let ay = self.bottom();
+
+				let p = (ay - rs.top()) / (re.top() - rs.top());
+				let full = end.sub(&start).scaled(p);
+				let actual = start.add(&full);
+				let actual_rect = other.clone().with_center(&actual);
+				if actual_rect.right() > self.left() && actual_rect.left() < self.right() {
+					Some((p, Cardinals::Top))
+				} else {
+					None
+				}
+			} else {
+				None
+			}
+		};
+
+		let horiz = if start.x > end.x {
+			// going left
+			if re.left() < self.right() && rs.left() > self.right() {
+				let ay = self.right();
+
+				let p = (ay - rs.left()) / (re.left() - rs.left());
+				let full = end.sub(&start).scaled(p);
+				let actual = start.add(&full);
+				let actual_rect = other.clone().with_center(&actual);
+				if actual_rect.top() > self.bottom() && actual_rect.bottom() < self.top() {
+					Some((p, Cardinals::Left))
+				} else {
+					None
+				}
+			} else {
+				None
+			}
+		} else {
+			// going right
+			if re.right() > self.left() && rs.right() < self.left() {
+				let ay = self.left();
+
+				let p = (ay - rs.right()) / (re.right() - rs.right());
+				let full = end.sub(&start).scaled(p);
+				let actual = start.add(&full);
+				let actual_rect = other.clone().with_center(&actual);
+				if actual_rect.top() > self.bottom() && actual_rect.bottom() < self.top() {
+					Some((p, Cardinals::Right))
+				} else {
+					None
+				}
+			} else {
+				None
+			}
+		};
+
+		match (vert, horiz) {
+			(None, None) => None,
+			(None, Some(h)) => Some(h),
+			(Some(v), None) => Some(v),
+			(Some(v), Some(h)) => {
+				if v.0 < h.0 {
+					Some(v)
+				} else {
+					Some(h)
+				}
+			},
+		}
 	}
 
 	/* :DEPRECATED:
