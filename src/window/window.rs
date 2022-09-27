@@ -5,12 +5,12 @@ use glutin::event_loop::{ControlFlow, EventLoop};
 use glutin::window::WindowBuilder;
 use glutin::ContextBuilder;
 use glutin::{ContextWrapper, PossiblyCurrent};
-
 use tracing::*;
 
 pub use crate::window::window_update_context::WindowUpdateContext;
 
 const TARGET_FPS: f64 = 60.0;
+const TARGET_FRAME_TIME: f64 = 1000.0 / TARGET_FPS;
 
 pub struct Window {
 	el:               Option<EventLoop<()>>,
@@ -184,7 +184,8 @@ impl Window {
 					//	                gl.draw_frame([1.0, 0.5, 0.7, 1.0]);
 					windowed_context.swap_buffers().unwrap();
 				},
-				Event::RedrawEventsCleared => {	// :TODO: :HACK: swapped RedrawEventsCleared and MainEventsCleared for testing
+				Event::RedrawEventsCleared => {
+					// :TODO: :HACK: swapped RedrawEventsCleared and MainEventsCleared for testing
 					// debug!("RedrawEventsCleared {}", event_count);
 
 					// all evens handled, lets render
@@ -210,27 +211,33 @@ impl Window {
 						_ => {
 							//	        println!("{:?}", event);
 							//	        *control_flow = ControlFlow::Poll;
-							let elapsed_time = std::time::Instant::now().duration_since(start_time).as_millis() as f64;
-							let frame_time = 1000.0 / TARGET_FPS;
-							let wait_millis = match frame_time >= elapsed_time {
-				                true => {
-				                	//debug!("Fast frame {} > {} (ms)", elapsed_time, frame_time);
-				                	frame_time - elapsed_time
-				                },
-				                false => {
-				                	warn!("Slow frame {} > {} (ms)", elapsed_time, frame_time);
-				                	if slowest_frame_ms < elapsed_time {
-				                		slowest_frame_ms = elapsed_time;
-				                	}
-				                	slow_frame_count += 1;
-				                	
-				                	0.0
-				                },
-				            };
-				            //debug!("Waiting {}", wait_millis);
+							let elapsed_time = std::time::Instant::now()
+								.duration_since(start_time)
+								.as_millis() as f64;
+							let wait_millis = match TARGET_FRAME_TIME >= elapsed_time {
+								true => {
+									//debug!("Fast frame {} > {} (ms)", elapsed_time, TARGET_FRAME_TIME);
+									TARGET_FRAME_TIME - elapsed_time
+								},
+								false => {
+									warn!(
+										"Slow frame {} > {} (ms)",
+										elapsed_time, TARGET_FRAME_TIME
+									);
+									if slowest_frame_ms < elapsed_time {
+										slowest_frame_ms = elapsed_time;
+									}
+									slow_frame_count += 1;
+
+									0.0
+								},
+							};
+							//debug!("Waiting {}", wait_millis);
 							//let next_frame_time = std::time::Instant::now() + std::time::Duration::from_nanos(16_666_667);
-							let next_frame_time = std::time::Instant::now() + std::time::Duration::from_millis(wait_millis as u64);
-							*control_flow = glutin::event_loop::ControlFlow::WaitUntil(next_frame_time);
+							let next_frame_time = std::time::Instant::now()
+								+ std::time::Duration::from_millis(wait_millis as u64);
+							*control_flow =
+								glutin::event_loop::ControlFlow::WaitUntil(next_frame_time);
 							next_time = next_frame_time;
 							// *control_flow = glutin::event_loop::ControlFlow::Wait;
 							// *control_flow = glutin::event_loop::ControlFlow::Poll;
@@ -259,8 +266,8 @@ impl Window {
 					println!("Unhandled event: {:?}", e);
 				},
 			}
-/*
-*/			
+			/*
+			*/
 		});
 	}
 }
