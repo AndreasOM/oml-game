@@ -1,4 +1,4 @@
-use chrono::prelude::*;
+//use chrono::prelude::*;
 use glutin::event::VirtualKeyCode;
 use glutin::event::{ElementState, Event, KeyboardInput, WindowEvent};
 use glutin::event_loop::{ControlFlow, EventLoop};
@@ -11,6 +11,35 @@ pub use crate::window::window_update_context::WindowUpdateContext;
 
 const TARGET_FPS: f64 = 60.0;
 const TARGET_FRAME_TIME: f64 = 1000.0 / TARGET_FPS;
+
+#[derive(Default)]
+#[allow(dead_code)]
+pub struct WindowCallbacks {
+	//	update: Option<&'a mut dyn FnMut(&mut WindowUpdateContext) -> bool>,
+	update: Option<Box<dyn FnMut(&mut Box<dyn WindowUserData>, &mut WindowUpdateContext) -> bool>>,
+	fixed_update: Option<Box<dyn FnMut(&mut Box<dyn WindowUserData>, f64)>>,
+	render:       Option<Box<dyn FnMut(&mut Box<dyn WindowUserData>)>>,
+}
+
+impl<'a> WindowCallbacks {
+	//	pub fn with_update( mut self, f: &'a mut (dyn for<'r> FnMut(&'r mut WindowUpdateContext) -> bool + 'a) ) -> Self {
+	pub fn with_update(
+		mut self,
+		f: Box<dyn FnMut(&mut Box<dyn WindowUserData>, &mut WindowUpdateContext) -> bool>,
+	) -> Self {
+		self.update = Some(f);
+		self
+	}
+	pub fn with_render(mut self, f: Box<dyn FnMut(&mut Box<dyn WindowUserData>)>) -> Self {
+		self.render = Some(f);
+		self
+	}
+}
+
+pub trait WindowUserData {
+	fn as_any(&self) -> &dyn std::any::Any;
+	fn as_any_mut(&mut self) -> &mut dyn std::any::Any;
+}
 
 pub struct Window {
 	el:               Option<EventLoop<()>>,
@@ -75,10 +104,7 @@ impl Window {
 		}
 	}
 
-	pub fn run<F: 'static>(&mut self, mut update_callback: F)
-	where
-		F: FnMut(&mut WindowUpdateContext) -> bool,
-	{
+	pub fn run(&mut self, mut userdata: Box<dyn WindowUserData>, mut callbacks: WindowCallbacks) {
 		let el = self.el.take().unwrap();
 		let windowed_context = self.windowed_context.take().unwrap();
 		let mut is_done = false;
@@ -198,10 +224,19 @@ impl Window {
 					previous_now = now;
 					window_update_context.time_step = time_step;
 
-					if !is_done && update_callback(&mut window_update_context) {
-						println!("f returned false");
+					let done = if let Some(ref mut ucb) = callbacks.update {
+						ucb(&mut userdata, &mut window_update_context)
+					} else {
+						true
+					};
+
+					if !is_done && done {
+						println!("update returned false");
 						*control_flow = ControlFlow::Exit;
 						is_done = true;
+					}
+					if let Some(ref mut rcb) = callbacks.render {
+						rcb(&mut userdata);
 					}
 
 					window_update_context.update();
@@ -267,7 +302,7 @@ impl Window {
 				},
 			}
 			/*
-			*/
+				*/
 		});
 	}
 }
