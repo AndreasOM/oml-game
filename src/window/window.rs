@@ -15,7 +15,6 @@ const TARGET_FRAME_TIME: f64 = 1000.0 / TARGET_FPS;
 #[derive(Default)]
 #[allow(dead_code)]
 pub struct WindowCallbacks {
-	//	update: Option<&'a mut dyn FnMut(&mut WindowUpdateContext) -> bool>,
 	update: Option<Box<dyn FnMut(&mut Box<dyn WindowUserData>, &mut WindowUpdateContext) -> bool>>,
 	fixed_update: Option<Box<dyn FnMut(&mut Box<dyn WindowUserData>, f64)>>,
 	render:       Option<Box<dyn FnMut(&mut Box<dyn WindowUserData>)>>,
@@ -28,6 +27,13 @@ impl<'a> WindowCallbacks {
 		f: Box<dyn FnMut(&mut Box<dyn WindowUserData>, &mut WindowUpdateContext) -> bool>,
 	) -> Self {
 		self.update = Some(f);
+		self
+	}
+	pub fn with_fixed_update(
+		mut self,
+		f: Box<dyn FnMut(&mut Box<dyn WindowUserData>, f64)>,
+	) -> Self {
+		self.fixed_update = Some(f);
 		self
 	}
 	pub fn with_render(mut self, f: Box<dyn FnMut(&mut Box<dyn WindowUserData>)>) -> Self {
@@ -235,6 +241,16 @@ impl Window {
 						*control_flow = ControlFlow::Exit;
 						is_done = true;
 					}
+
+					if !is_done {
+						if let Some(ref mut fucb) = callbacks.fixed_update {
+							// :TODO: make time step fixed
+							let half_time_step = 0.5 * time_step;
+							fucb(&mut userdata, half_time_step);
+							fucb(&mut userdata, half_time_step);
+						}
+					}
+
 					if let Some(ref mut rcb) = callbacks.render {
 						rcb(&mut userdata);
 					}

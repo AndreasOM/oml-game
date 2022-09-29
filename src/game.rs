@@ -1,4 +1,5 @@
 use chrono::prelude::*;
+use tracing::*;
 
 use crate::window::{Window, WindowCallbacks, WindowUserData};
 use crate::App;
@@ -26,7 +27,7 @@ impl Game {
 	}
 
 	pub fn run(mut app: impl App + 'static) -> anyhow::Result<()> {
-		println!("oml-game::Game::run()");
+		debug!("oml-game::Game::run()");
 
 		let mut window = Window::new();
 
@@ -37,10 +38,11 @@ impl Game {
 		let end_time: DateTime<Utc> = Utc::now();
 		let load_duration = end_time.signed_duration_since(start_time);
 		let load_time = load_duration.num_milliseconds() as f64 / 1000.0;
-		println!("App setup took {} seconds", load_time);
+		info!("App setup took {} seconds", load_time);
 
 		let callbacks = WindowCallbacks::default()
 			.with_update(Box::new(|wud, wuc| {
+				//debug!("Update");
 				match wud.as_any_mut().downcast_mut::<Game>() {
 					Some(game) => {
 						match game.app().update(wuc) {
@@ -60,7 +62,17 @@ impl Game {
 				}
 				false
 			}))
+			.with_fixed_update(Box::new(|wud, time_step| {
+				//debug!("Fixed Update {}", time_step);
+				match wud.as_any_mut().downcast_mut::<Game>() {
+					Some(game) => {
+						game.app().fixed_update(time_step);
+					},
+					None => {},
+				}
+			}))
 			.with_render(Box::new(|wud| {
+				//debug!("Render");
 				match wud.as_any_mut().downcast_mut::<Game>() {
 					Some(game) => {
 						game.app().render();

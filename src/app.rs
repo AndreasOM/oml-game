@@ -11,5 +11,6 @@ pub trait App {
 	fn update(&mut self, _wuc: &mut WindowUpdateContext) -> anyhow::Result<()> {
 		Ok(())
 	}
+	fn fixed_update(&mut self, _time_step: f64) {}
 	fn render(&mut self) {}
 }
