@@ -1,7 +1,9 @@
+use std::path::Path;
+
 use chrono::prelude::*;
 use tracing::*;
 
-use crate::window::{Window, WindowCallbacks, WindowUserData};
+use crate::window::{Window, WindowCallbacks, WindowLayout, WindowUserData};
 use crate::App;
 
 pub struct Game {
@@ -22,14 +24,33 @@ impl Game {
 		Self { app }
 	}
 
-	fn app(&mut self) -> &mut Box<dyn App> {
+	fn app_mut(&mut self) -> &mut Box<dyn App> {
 		&mut self.app
+	}
+	fn app(&self) -> &Box<dyn App> {
+		&self.app
 	}
 
 	pub fn run(mut app: impl App + 'static) -> anyhow::Result<()> {
 		debug!("oml-game::Game::run()");
 
 		let mut window = Window::new();
+
+		if app.remember_window_layout() {
+			let filename = app.layout_filename();
+			let mut layout = WindowLayout::default();
+			match layout.load(&Path::new(&filename)) {
+				Ok(_) => {
+					if let Some(main_layout) = layout.get_window("main") {
+						println!("{:#?}", &main_layout);
+						window.set_position(main_layout.pos());
+						window.set_size(main_layout.size());
+					}
+				},
+				// ignore errors
+				_ => {},
+			}
+		}
 
 		window.setup()?;
 
@@ -45,7 +66,16 @@ impl Game {
 				//debug!("Update");
 				match wud.as_any_mut().downcast_mut::<Game>() {
 					Some(game) => {
-						match game.app().update(wuc) {
+						if wuc.window_changed && game.app().remember_window_layout() {
+							let mut layout = WindowLayout::default();
+							layout.set_window("main", &wuc.window_pos, &wuc.window_size);
+							let filename = game.app().layout_filename();
+							match layout.save(&Path::new(&filename)) {
+								// :TODO: handle errors
+								_ => {},
+							}
+						}
+						match game.app_mut().update(wuc) {
 							Ok(_) => {},
 							Err(_e) => {
 								return true;
@@ -54,7 +84,7 @@ impl Game {
 
 						if game.app().is_done() {
 							println!("App is done, tearing down");
-							game.app().teardown();
+							game.app_mut().teardown();
 							return true;
 						}
 					},
@@ -66,7 +96,7 @@ impl Game {
 				//debug!("Fixed Update {}", time_step);
 				match wud.as_any_mut().downcast_mut::<Game>() {
 					Some(game) => {
-						game.app().fixed_update(time_step);
+						game.app_mut().fixed_update(time_step);
 					},
 					None => {},
 				}
@@ -75,7 +105,7 @@ impl Game {
 				//debug!("Render");
 				match wud.as_any_mut().downcast_mut::<Game>() {
 					Some(game) => {
-						game.app().render();
+						game.app_mut().render();
 					},
 					None => {},
 				}
@@ -83,7 +113,7 @@ impl Game {
 
 		let game = Box::new(Game::new(Box::new(app)));
 
-		window.run(game, callbacks);
+		window.run(None, game, callbacks); // never returns since thread is hijacked for good.
 
 		window.teardown();
 

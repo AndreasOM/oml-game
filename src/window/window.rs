@@ -1,4 +1,5 @@
 //use chrono::prelude::*;
+use glutin::dpi::PhysicalPosition;
 use glutin::event::VirtualKeyCode;
 use glutin::event::{ElementState, Event, KeyboardInput, WindowEvent};
 use glutin::event_loop::{ControlFlow, EventLoop};
@@ -7,6 +8,7 @@ use glutin::ContextBuilder;
 use glutin::{ContextWrapper, PossiblyCurrent};
 use tracing::*;
 
+use crate::math::Vector2;
 pub use crate::window::window_update_context::WindowUpdateContext;
 
 const TARGET_FPS: f64 = 60.0;
@@ -51,6 +53,8 @@ pub struct Window {
 	el:               Option<EventLoop<()>>,
 	windowed_context: Option<ContextWrapper<PossiblyCurrent, glutin::window::Window>>,
 	title:            String,
+	pos:              Vector2,
+	size:             Vector2,
 }
 
 impl Window {
@@ -59,6 +63,8 @@ impl Window {
 			el:               None,
 			windowed_context: None,
 			title:            String::new(),
+			pos:              Vector2::new(100.0, 100.0),
+			size:             Vector2::new(1400.0, 700.0),
 		}
 	}
 
@@ -71,20 +77,35 @@ impl Window {
 		}
 	}
 
+	pub fn set_position(&mut self, pos: &Vector2) {
+		self.pos = *pos;
+	}
+
+	pub fn set_size(&mut self, size: &Vector2) {
+		self.size = *size;
+	}
+
 	pub fn setup(&mut self) -> anyhow::Result<()> {
 		let el = EventLoop::new();
 		let wb = WindowBuilder::new()
 			//	    			.with_inner_size( glutin::dpi::PhysicalSize{ width: 1920/2, height: 1080/2 } )
 			//	    			.with_inner_size( glutin::dpi::PhysicalSize{ width: 1920/2, height: 512 } )
 			.with_inner_size(glutin::dpi::PhysicalSize {
-				width:  1400,
-				height: 700,
+				width:  self.size.x as i32,
+				height: self.size.y as i32,
 			})
 			//	    			.with_inner_size( glutin::dpi::PhysicalSize{ width: 1880, height: 700 } )
 			//	    			.with_inner_size( glutin::dpi::PhysicalSize{ width: 512, height: 512 } )
+			.with_position(glutin::dpi::PhysicalPosition {
+				x: self.pos.x as i32,
+				y: self.pos.y as i32,
+			})
 			.with_title(&self.title);
 
-		let windowed_context = ContextBuilder::new().build_windowed(wb, &el).unwrap();
+		let windowed_context = ContextBuilder::new()
+			.with_vsync(true) // yes?
+			.build_windowed(wb, &el)
+			.unwrap();
 
 		let windowed_context = unsafe { windowed_context.make_current().unwrap() };
 
@@ -110,9 +131,15 @@ impl Window {
 		}
 	}
 
-	pub fn run(&mut self, mut userdata: Box<dyn WindowUserData>, mut callbacks: WindowCallbacks) {
-		let el = self.el.take().unwrap();
-		let windowed_context = self.windowed_context.take().unwrap();
+	fn run_event_loop(
+		mut parent_thread: Option<std::thread::Thread>,
+		el: EventLoop<()>,
+		windowed_context: ContextWrapper<PossiblyCurrent, glutin::window::Window>,
+		mut userdata: Box<dyn WindowUserData>,
+		mut callbacks: WindowCallbacks,
+	) {
+		// let el = window.el.take().unwrap();
+		// let windowed_context = window.windowed_context.take().unwrap();
 		let mut is_done = false;
 		let mut window_update_context = WindowUpdateContext::new();
 
@@ -134,6 +161,38 @@ impl Window {
 			window_update_context.window_size.y =
 				windowed_context.window().inner_size().height as f32;
 
+			match windowed_context.window().inner_position() {
+				Ok(PhysicalPosition { x, y }) => {
+					let x = x as f32;
+					let y = y as f32;
+					if window_update_context.window_pos.x != x {
+						window_update_context.window_pos.x = x;
+						window_update_context.window_changed = true;
+					}
+					if window_update_context.window_pos.y != y {
+						window_update_context.window_pos.y = y;
+						window_update_context.window_changed = true;
+					}
+				},
+				_ => {},
+			}
+			/*
+			match windowed_context.window().outer_position() {
+				Ok(PhysicalPosition{ x, y }) => {
+					let x = x as f32;
+					let y = y as f32;
+					if window_update_context.window_pos.x != x {
+						window_update_context.window_pos.x = x;
+						window_update_context.window_changed = true;
+					}
+					if window_update_context.window_pos.y != y {
+						window_update_context.window_pos.y = y;
+						window_update_context.window_changed = true;
+					}
+				},
+				_ => {},
+			}
+			*/
 			match event {
 				Event::LoopDestroyed => return,
 				Event::WindowEvent { event, .. } => match event {
@@ -240,6 +299,9 @@ impl Window {
 						println!("update returned false");
 						*control_flow = ControlFlow::Exit;
 						is_done = true;
+						if let Some(parent_thread) = parent_thread.take() {
+							parent_thread.unpark();
+						}
 					}
 
 					if !is_done {
@@ -320,5 +382,17 @@ impl Window {
 			/*
 				*/
 		});
+	}
+	pub fn run(
+		&mut self,
+		parent_thread: Option<std::thread::Thread>,
+		userdata: Box<dyn WindowUserData>,
+		callbacks: WindowCallbacks,
+	) {
+		let el = self.el.take().unwrap();
+		let windowed_context = self.windowed_context.take().unwrap();
+
+		// glutin's EventLoop run hijacks the current thread and never returns it, so we have to work around that
+		Window::run_event_loop(parent_thread, el, windowed_context, userdata, callbacks);
 	}
 }
