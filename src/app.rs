@@ -11,5 +11,17 @@ pub trait App {
 	fn update(&mut self, _wuc: &mut WindowUpdateContext) -> anyhow::Result<()> {
 		Ok(())
 	}
+	fn fixed_update(&mut self, _time_step: f64) {}
 	fn render(&mut self) {}
+
+	fn remember_window_layout(&self) -> bool {
+		false
+	}
+
+	fn app_name(&self) -> &str {
+		"oml-game"
+	}
+	fn layout_filename(&self) -> String {
+		format!("{}_layout.yaml", self.app_name())
+	}
 }

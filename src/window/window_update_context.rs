@@ -9,6 +9,8 @@ pub struct WindowUpdateContext {
 	pub mouse_buttons:     [bool; 3], // left middle right
 	pub is_key_pressed:    [bool; 256],
 	pub window_size:       Vector2,
+	pub window_pos:        Vector2,
+	pub window_changed:    bool,
 
 	previous_mouse_buttons: [bool; 3],
 	previous_keys_pressed:  [bool; 256],
@@ -24,6 +26,8 @@ impl WindowUpdateContext {
 			mouse_buttons:     [false, false, false],
 			is_key_pressed:    [false; 256],
 			window_size:       Vector2::zero(),
+			window_pos:        Vector2::zero(),
+			window_changed:    false,
 
 			previous_mouse_buttons: [false, false, false],
 			previous_keys_pressed:  [false; 256],

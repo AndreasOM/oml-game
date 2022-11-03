@@ -1,6 +1,8 @@
+use serde::{Deserialize, Serialize};
+
 use crate::math::Vector4;
 
-#[derive(Default, Copy, Clone, PartialEq)]
+#[derive(Default, Copy, Clone, PartialEq, Deserialize, Serialize)]
 pub struct Vector2 {
 	pub x: f32,
 	pub y: f32,
