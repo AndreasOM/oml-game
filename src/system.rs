@@ -102,3 +102,5 @@ pub mod filesystem_layered;
 
 mod serializer;
 pub use serializer::Serializer;
+
+pub mod audio_fileloader_system;
