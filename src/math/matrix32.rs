@@ -20,12 +20,23 @@ impl Matrix32 {
 			pos: Vector2::zero(),
 		}
 	}
+
+	pub fn with_scaling(mut self, scale: f32) -> Self {
+		self.rot = Matrix22::scaling(scale);
+		self
+	}
+
 	pub fn translation(t: &Vector2) -> Self {
 		Self {
 			rot: Matrix22::identity(),
 			pos: *t,
 		}
 	}
+	pub fn with_translation(mut self, t: &Vector2) -> Self {
+		self.pos = *t;
+		self
+	}
+
 	pub fn scaling_xy(x: f32, y: f32) -> Self {
 		Self {
 			rot: Matrix22::scaling_xy(x, y),
