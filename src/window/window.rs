@@ -256,6 +256,7 @@ impl Window {
 						_ => {
 							// println!("KeyboardInput {:?}", &virtual_code);
 							if let Some(ascii) = match virtual_code {
+								VirtualKeyCode::Equals => Some(61),
 								VirtualKeyCode::LBracket => Some(91),
 								VirtualKeyCode::Backslash => Some(92),
 								VirtualKeyCode::RBracket => Some(93),
