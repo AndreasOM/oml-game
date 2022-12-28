@@ -47,7 +47,7 @@ impl Entry {
 }
 // :TODO: move somewhere more sane
 fn simple_format_u32(f: &str, n: u32) -> String {
-	let s = f.clone();
+	let s = f.to_owned();
 	let re = Regex::new(r"(%d)").unwrap();
 
 	//	println!("simple_format_u32 {:?} with {:?}", s, re );
