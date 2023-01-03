@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::Path;
+use std::sync::Arc;
 
 use crate::system::filesystem::Filesystem;
 use crate::system::filesystem_empty::FilesystemEmpty;
@@ -9,6 +10,7 @@ use crate::system::filesystem_empty::FilesystemEmpty;
 pub struct System {
 	default_filesystem:  Box<dyn Filesystem>,
 	savegame_filesystem: Box<dyn Filesystem>,
+	data:                Option<Arc<dyn Data>>,
 }
 
 impl Default for System {
@@ -16,6 +18,7 @@ impl Default for System {
 		Self {
 			default_filesystem:  Box::new(FilesystemEmpty::new()),
 			savegame_filesystem: Box::new(FilesystemEmpty::new()),
+			data:                None,
 		}
 	}
 }
@@ -45,6 +48,19 @@ impl System {
 
 	pub fn savegame_filesystem_mut(&mut self) -> &mut Box<dyn Filesystem> {
 		&mut self.savegame_filesystem
+	}
+
+	pub fn set_data(&mut self, data: Arc<dyn Data>) {
+		if self.data.is_some() {
+			panic!(
+				"Tried to set_data for System more than once, this is probably not want you want!"
+			)
+		}
+		self.data = Some(data);
+	}
+
+	pub fn data(&self) -> &Option<Arc<dyn Data>> {
+		&self.data
 	}
 
 	pub fn get_document_dir(name: &str) -> String {
@@ -104,3 +120,6 @@ mod serializer;
 pub use serializer::Serializer;
 
 pub mod audio_fileloader_system;
+
+mod data;
+pub use data::Data;

@@ -136,6 +136,26 @@ impl Rectangle {
 			&& self.bottom_left.y + self.size.y >= pos.y
 	}
 
+	pub fn combine_with(mut self, other: &Rectangle) -> Rectangle {
+		let l = self.left().min(other.left());
+		let r = self.right().max(other.right());
+		let b = self.bottom().min(other.bottom());
+		let t = self.top().max(other.top());
+		let w = r - l;
+		let h = t - b;
+		self.size = Vector2::new(w, h);
+		match self.anchor {
+			Anchor::BottomLeft => {
+				todo!();
+			},
+			Anchor::Center => {
+				let cx = (l + r) / 2.0;
+				let cy = (b + t) / 2.0;
+				self.with_center(&Vector2::new(cx, cy))
+			},
+		}
+	}
+
 	pub fn would_collide(
 		&self,
 		start: &Vector2,
@@ -380,5 +400,30 @@ mod tests {
 		assert_eq!(r.contains(&Vector2::new(0.0, -11.0)), false);
 		assert_eq!(r.contains(&Vector2::new(0.0, 10.0)), true);
 		assert_eq!(r.contains(&Vector2::new(0.0, 11.0)), false);
+	}
+	#[test]
+	fn can_combine_center() {
+		let r: Rectangle = Rectangle::default()
+			.with_center(&Vector2::new(0.0, 0.0))
+			.with_size(&Vector2::new(10.0, 20.0));
+		assert_eq!(r.width(), 10.0);
+		assert_eq!(r.height(), 20.0);
+
+		let r2: Rectangle = Rectangle::default()
+			.with_center(&Vector2::new(0.0, 0.0))
+			.with_size(&Vector2::new(20.0, 40.0));
+		let r = r.combine_with(&r2);
+		assert_eq!(r.width(), 20.0);
+		assert_eq!(r.height(), 40.0);
+		dbg!(r);
+
+		let r2: Rectangle = Rectangle::default()
+			.with_center(&Vector2::new(100.0, 100.0))
+			.with_size(&Vector2::new(20.0, 40.0));
+		let r = r.combine_with(&r2);
+		dbg!(r2);
+		dbg!(r);
+		assert_eq!(r.width(), 120.0);
+		assert_eq!(r.height(), 140.0);
 	}
 }

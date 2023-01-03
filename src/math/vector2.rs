@@ -30,6 +30,13 @@ impl Vector2 {
 		}
 	}
 
+	pub fn reciprocal(&self) -> Self {
+		Self {
+			x: 1.0 / self.x,
+			y: 1.0 / self.y,
+		}
+	}
+
 	pub fn scaled(&self, factor: f32) -> Self {
 		Self {
 			x: self.x * factor,
@@ -49,6 +56,13 @@ impl Vector2 {
 		Self {
 			x: self.x * factor.x,
 			y: self.y * factor.y,
+		}
+	}
+
+	pub fn scaled_reciprocal_vector2(&self, factor: &Vector2) -> Self {
+		Self {
+			x: self.x / factor.x,
+			y: self.y / factor.y,
 		}
 	}
 
