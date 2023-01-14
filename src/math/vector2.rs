@@ -1,4 +1,5 @@
 use std::str::FromStr;
+
 use serde::{Deserialize, Serialize};
 
 use crate::math::Vector4;
@@ -14,13 +15,15 @@ impl Vector2 {
 		Self { x, y }
 	}
 
-	pub fn from_x_str( x_str: &str ) -> Self {
-		let size: Vec<f32> = x_str.split("x").map(|s| {f32::from_str(s.trim()).unwrap_or( 0.0 )}).collect();
+	pub fn from_x_str(x_str: &str) -> Self {
+		let size: Vec<f32> = x_str
+			.split("x")
+			.map(|s| f32::from_str(s.trim()).unwrap_or(0.0))
+			.collect();
 		Self {
-			x: size[ 0 ],
-			y: size[ 1 ],
+			x: size[0],
+			y: size[1],
 		}
-
 	}
 	pub fn zero() -> Self {
 		Self { x: 0.0, y: 0.0 }
@@ -128,13 +131,13 @@ mod tests {
 	use super::*;
 	#[test]
 	fn from_x_str_works() -> anyhow::Result<()> {
-		let v = Vector2::from_x_str( "64x64" );
-		assert_eq!( 64.0, v.x );
-		assert_eq!( 64.0, v.y );
+		let v = Vector2::from_x_str("64x64");
+		assert_eq!(64.0, v.x);
+		assert_eq!(64.0, v.y);
 
-		let v = Vector2::from_x_str( "      64   x    64   " );
-		assert_eq!( 64.0, v.x );
-		assert_eq!( 64.0, v.y );
+		let v = Vector2::from_x_str("      64   x    64   ");
+		assert_eq!(64.0, v.x);
+		assert_eq!(64.0, v.y);
 
 		Ok(())
 	}

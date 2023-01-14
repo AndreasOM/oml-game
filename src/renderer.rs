@@ -30,7 +30,7 @@ pub struct Color {
 }
 
 impl Default for Color {
-	fn default() -> Self { 
+	fn default() -> Self {
 		Color::white()
 	}
 }

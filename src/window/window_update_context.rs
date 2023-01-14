@@ -14,23 +14,28 @@ pub struct WindowUpdateContext {
 
 	previous_mouse_buttons: [bool; 3],
 	previous_keys_pressed:  [bool; 256],
+
+	pub is_function_key_pressed:    [bool; 16],
+	previous_function_keys_pressed: [bool; 16],
 }
 
 impl WindowUpdateContext {
 	pub fn new() -> Self {
 		Self {
-			time_step:         0.0,
-			is_escape_pressed: false,
-			is_space_pressed:  false,
-			mouse_pos:         Vector2::zero(),
-			mouse_buttons:     [false, false, false],
-			is_key_pressed:    [false; 256],
-			window_size:       Vector2::zero(),
-			window_pos:        Vector2::zero(),
-			window_changed:    false,
+			time_step:               0.0,
+			is_escape_pressed:       false,
+			is_space_pressed:        false,
+			mouse_pos:               Vector2::zero(),
+			mouse_buttons:           [false, false, false],
+			is_key_pressed:          [false; 256],
+			is_function_key_pressed: [false; 16],
+			window_size:             Vector2::zero(),
+			window_pos:              Vector2::zero(),
+			window_changed:          false,
 
-			previous_mouse_buttons: [false, false, false],
-			previous_keys_pressed:  [false; 256],
+			previous_mouse_buttons:         [false, false, false],
+			previous_keys_pressed:          [false; 256],
+			previous_function_keys_pressed: [false; 16],
 		}
 	}
 
@@ -38,6 +43,7 @@ impl WindowUpdateContext {
 		//		dbg!(&self);
 		self.previous_mouse_buttons = self.mouse_buttons;
 		self.previous_keys_pressed = self.is_key_pressed;
+		self.previous_function_keys_pressed = self.is_function_key_pressed;
 		//		for i in 0..self.is_key_pressed.len() {
 		//			self.previous_keys_pressed[ i ] = self.is_key_pressed[ i ];
 		//		}
@@ -53,6 +59,15 @@ impl WindowUpdateContext {
 
 	pub fn is_key_pressed(&self, key: u8) -> bool {
 		self.is_key_pressed[key as usize]
+	}
+
+	pub fn was_function_key_pressed(&self, key: u8) -> bool {
+		self.is_function_key_pressed[key as usize]
+			&& !self.previous_function_keys_pressed[key as usize]
+	}
+
+	pub fn is_function_key_pressed(&self, key: u8) -> bool {
+		self.is_function_key_pressed[key as usize]
 	}
 
 	pub fn time_step(&self) -> f64 {
