@@ -29,6 +29,12 @@ pub struct Color {
 	pub a: f32,
 }
 
+impl Default for Color {
+	fn default() -> Self { 
+		Color::white()
+	}
+}
+
 impl Color {
 	pub fn white() -> Self {
 		Self {
