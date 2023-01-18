@@ -1,4 +1,5 @@
 use std::str::FromStr;
+
 use serde::{Deserialize, Serialize};
 
 use crate::math::Vector4;
