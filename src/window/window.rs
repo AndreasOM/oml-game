@@ -266,7 +266,18 @@ impl Window {
 								window_update_context.is_key_pressed[ascii] =
 									state == ElementState::Pressed;
 							} else if let Some(fkey) = match virtual_code {
+								VirtualKeyCode::F1 => Some(1),
+								VirtualKeyCode::F2 => Some(2),
+								VirtualKeyCode::F3 => Some(3),
+								VirtualKeyCode::F4 => Some(4),
 								VirtualKeyCode::F5 => Some(5),
+								VirtualKeyCode::F6 => Some(6),
+								VirtualKeyCode::F7 => Some(7),
+								VirtualKeyCode::F8 => Some(8),
+								VirtualKeyCode::F9 => Some(9),
+								VirtualKeyCode::F10 => Some(10),
+								VirtualKeyCode::F11 => Some(11),
+								VirtualKeyCode::F12 => Some(12),
 								_ => None,
 							} {
 								window_update_context.is_function_key_pressed[fkey] =
