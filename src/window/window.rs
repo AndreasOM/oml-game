@@ -265,6 +265,12 @@ impl Window {
 							} {
 								window_update_context.is_key_pressed[ascii] =
 									state == ElementState::Pressed;
+							} else if let Some(fkey) = match virtual_code {
+								VirtualKeyCode::F5 => Some(5),
+								_ => None,
+							} {
+								window_update_context.is_function_key_pressed[fkey] =
+									state == ElementState::Pressed;
 							} else {
 								println!("Unmapped KeyboardInput {:?} !", &virtual_code);
 							}

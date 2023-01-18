@@ -134,7 +134,7 @@ impl Texture {
 		c.fill(0x00000000);
 		*/
 		// :TODO: run performance tests to see if this is as fast as the above
-		c.resize(buf_size,0x00000000);
+		c.resize(buf_size, 0x00000000);
 		//		c[ 0 ] = 0xff0000ff;
 		self.canvas = Some(c);
 	}
