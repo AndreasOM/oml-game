@@ -123,3 +123,20 @@ pub mod audio_fileloader_system;
 
 mod data;
 pub use data::Data;
+
+#[cfg(test)]
+mod tests {
+	use oml_audio::Audio;
+	use oml_audio::AudioBackend;
+
+	use super::*;
+	#[test]
+	fn oml_audio_via_system_works() -> anyhow::Result<()> {
+		let mut audio: Box<dyn AudioBackend<System>> = Audio::create_default();
+		audio.start();
+		audio.update();
+		eprintln!("{:?}", audio.backend_type());
+
+		Ok(())
+	}
+}

@@ -1,4 +1,4 @@
-use oml_audio::fileloader::{FileLoader, FileLoaderFile};
+pub use oml_audio::fileloader::{FileLoader, FileLoaderFile};
 
 use crate::system::filesystem_stream::FilesystemStream;
 use crate::system::System;
