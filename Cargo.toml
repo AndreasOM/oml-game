@@ -13,6 +13,16 @@ repository = "https://github.com/AndreasOM/oml-game"
 keywords = ["tools", "gamedev"]
 categories = ["multimedia","game-development"]
 
+[features]
+# default = [ "audio_apple", "audio_miniaudio", "audio_stub" ]
+# default = [ "use_stub" ]
+# default = [ "use_apple" ]
+# default = [ "use_miniaudio" ]
+default = []
+audio_apple = [ "oml-audio/use_apple" ]
+audio_miniaudio = [ "oml-audio/use_miniaudio" ]
+audio_stub = [ "oml-audio/use_stub" ]
+
 [dependencies]
 anyhow = "1.0.58"
 backtrace = "0.3.66"
@@ -32,7 +42,7 @@ tracing = "0.1.36"
 [dependencies.oml-audio]
 #path = "../oml-audio"
 #version = "0.8.5-dev"
-version = "0.8.4-alpha"
+version = "0.8.6-alpha"
 
 [build-dependencies]
 gl_generator = "0.14.0"

@@ -135,6 +135,7 @@ mod tests {
 		let mut audio: Box<dyn AudioBackend<System>> = Audio::create_default();
 		audio.start();
 		audio.update();
+		eprintln!("{:?}", audio.backend_type());
 
 		Ok(())
 	}

@@ -1322,9 +1322,9 @@ dependencies = [
 
 [[package]]
 name = "oml-audio"
-version = "0.8.4-alpha"
+version = "0.8.6-alpha"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "78726c3e9960971a34dbcbfee786ba64398adea15fd7acb122d9c06beb52d2fd"
+checksum = "3734fe7dfc6bfc570c85f24e4bc8c7efddf2a38b1f7a71c6669b947508786dbd"
 dependencies = [
  "cfg_aliases",
  "lewton",
