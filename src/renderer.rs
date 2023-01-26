@@ -142,6 +142,7 @@ impl Color {
 
 #[derive(Debug, Copy, Clone)]
 #[allow(dead_code)] // clippy gives a false positive here
+#[repr(C)]
 pub struct Vertex {
 	pos:        [f32; 3],
 	tex_coords: [f32; 2],
@@ -409,7 +410,13 @@ impl Renderer {
 		}
 	*/
 	pub fn setup(&mut self, window: &Window, _system: &mut System) -> anyhow::Result<()> {
-		gl::load_with(|s| window.get_proc_address(s) as *const _); // :TODO: maybe use CFBundleGetFunctionPointerForName directly
+		gl::load_with(|s| {
+			let a = window.get_proc_address(s) as *const _;
+			// let a = 0 as *const _; // force nullptr for testing
+			// tracing::debug!("Loading {} -> {:?}", s, a);
+			a
+		}
+		); // :TODO: maybe use CFBundleGetFunctionPointerForName directly
 
 		unsafe {
 			let s = gl::GetString(gl::VERSION);
