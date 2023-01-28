@@ -32,6 +32,9 @@ impl AnimatedTextureConfiguration {
 
 impl From<(&str, i8, u16, u16, f32)> for AnimatedTextureConfiguration {
 	fn from(t: (&str, i8, u16, u16, f32)) -> Self {
+		if t.1 != 0 {
+			tracing::warn!( "AnimatedTextureConfiguration for {} from (...) is a hack. .1 is ignored, please fix your template", t.0);
+		}
 		Self {
 			template:    t.0.to_owned(),
 			first_frame: t.2,
