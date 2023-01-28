@@ -14,14 +14,14 @@ use crate::renderer::{
 	Vertex,
 };
 
-fn gl_check_error( line: u32 ) {
+fn gl_check_error(line: u32) {
 	unsafe {
 		let e = gl::GetError();
 		match e {
 			gl::NO_ERROR => {},
 			e => {
-				tracing::error!("gl error: {} in line {}", e, line );
-			}
+				tracing::error!("gl error: {} in line {}", e, line);
+			},
 		}
 	}
 }
@@ -170,7 +170,7 @@ impl Material {
 		}
 		tracing::debug!("Rendering Material with {} vertices", vertex_count);
 
-		gl_check_error( line!() );
+		gl_check_error(line!());
 		let vertex_count = unsafe {
 			gl::Enable(gl::BLEND);
 			gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
@@ -277,7 +277,7 @@ impl Material {
 			//			println!("Rendering {} vertices", vertex_count);
 			vertex_count as u32
 		};
-		gl_check_error( line!() );
+		gl_check_error(line!());
 		//		dbg!(&self);
 		vertex_count
 	}

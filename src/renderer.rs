@@ -415,8 +415,7 @@ impl Renderer {
 			// let a = 0 as *const _; // force nullptr for testing
 			// tracing::debug!("Loading {} -> {:?}", s, a);
 			a
-		}
-		); // :TODO: maybe use CFBundleGetFunctionPointerForName directly
+		}); // :TODO: maybe use CFBundleGetFunctionPointerForName directly
 
 		unsafe {
 			let s = gl::GetString(gl::VERSION);
@@ -1084,6 +1083,7 @@ impl FontManager {
 
 mod animated_texture;
 pub use animated_texture::AnimatedTexture;
+pub use animated_texture::AnimatedTextureConfiguration;
 
 mod debug;
 pub use debug::Debug;
