@@ -26,6 +26,11 @@ impl Matrix32 {
 		self
 	}
 
+	pub fn with_scaling_xy(mut self, xs: f32, ys: f32) -> Self {
+		self.rot = Matrix22::scaling_xy(xs, ys);
+		self
+	}
+
 	pub fn translation(t: &Vector2) -> Self {
 		Self {
 			rot: Matrix22::identity(),

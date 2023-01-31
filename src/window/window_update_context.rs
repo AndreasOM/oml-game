@@ -54,6 +54,9 @@ impl WindowUpdateContext {
 	pub fn was_mouse_button_pressed(&self, button_index: usize) -> bool {
 		self.mouse_buttons[button_index] && !self.previous_mouse_buttons[button_index]
 	}
+	pub fn was_mouse_button_released(&self, button_index: usize) -> bool {
+		!self.mouse_buttons[button_index] && self.previous_mouse_buttons[button_index]
+	}
 
 	pub fn was_key_pressed(&self, key: u8) -> bool {
 		self.is_key_pressed[key as usize] && !self.previous_keys_pressed[key as usize]

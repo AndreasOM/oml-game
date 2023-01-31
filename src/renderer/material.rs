@@ -168,7 +168,7 @@ impl Material {
 		if vertex_count == 0 {
 			return 0;
 		}
-		tracing::debug!("Rendering Material with {} vertices", vertex_count);
+		// tracing::debug!("Rendering Material with {} vertices", vertex_count);
 
 		gl_check_error(line!());
 		let vertex_count = unsafe {
