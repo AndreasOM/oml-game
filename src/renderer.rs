@@ -676,9 +676,9 @@ impl Renderer {
 		self.switch_active_material_if_needed();
 	}
 
-	pub fn use_texture_id_in_channel(&mut self, tex_id: u16, channel: u8 ) {
+	pub fn use_texture_id_in_channel(&mut self, tex_id: u16, channel: u8) {
 		self.active_textures[channel as usize] = Some(tex_id);
-		self.switch_active_material_if_needed();		
+		self.switch_active_material_if_needed();
 	}
 	pub fn use_texture_in_channel(&mut self, name: &str, channel: u8) {
 		// :TODO: avoid changing texture when it is already active
@@ -832,10 +832,10 @@ impl Renderer {
 			.texture_manager
 			.get(ti as usize)
 			.unwrap_or(self.texture_manager.get(0).unwrap());
-
-		let tex_mtx = *at.mtx();
-		let user_tex_mtx = self.tex_matrix;
-
+		/*
+				let tex_mtx = *at.mtx();
+				let user_tex_mtx = self.tex_matrix;
+		*/
 		let mut v = [0u32; 4];
 
 		// :TODO: future optimization once we have full matrix implementation
@@ -846,10 +846,12 @@ impl Renderer {
 			let p = p.scale_vector2(&size);
 			let p = mtx.mul_vector2(&p).add(&pos);
 
-			// :TODO: decide if we might want to move this calculation to set_tex_coords
+			// this calculation has been moved into add_vertex
 			let t = tex_coords[i];
+			/*
 			let t = user_tex_mtx.mul_vector2(&t);
 			let t = tex_mtx.mul_vector2(&t);
+			*/
 
 			self.set_tex_coords(&t);
 			v[i] = self.add_vertex(&p);

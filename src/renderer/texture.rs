@@ -75,7 +75,7 @@ impl Texture {
 		&self.mtx
 	}
 
-	pub fn set_mtx(&mut self, mtx: &Matrix32 ) {
+	pub fn set_mtx(&mut self, mtx: &Matrix32) {
 		self.mtx = *mtx;
 	}
 
