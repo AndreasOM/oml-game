@@ -142,6 +142,7 @@ impl Color {
 
 #[derive(Debug, Copy, Clone)]
 #[allow(dead_code)] // clippy gives a false positive here
+#[repr(C)]
 pub struct Vertex {
 	pos:        [f32; 3],
 	tex_coords: [f32; 2],
@@ -409,7 +410,12 @@ impl Renderer {
 		}
 	*/
 	pub fn setup(&mut self, window: &Window, _system: &mut System) -> anyhow::Result<()> {
-		gl::load_with(|s| window.get_proc_address(s) as *const _); // :TODO: maybe use CFBundleGetFunctionPointerForName directly
+		gl::load_with(|s| {
+			let a = window.get_proc_address(s) as *const _;
+			// let a = 0 as *const _; // force nullptr for testing
+			// tracing::debug!("Loading {} -> {:?}", s, a);
+			a
+		}); // :TODO: maybe use CFBundleGetFunctionPointerForName directly
 
 		unsafe {
 			let s = gl::GetString(gl::VERSION);
@@ -670,6 +676,10 @@ impl Renderer {
 		self.switch_active_material_if_needed();
 	}
 
+	pub fn use_texture_id_in_channel(&mut self, tex_id: u16, channel: u8 ) {
+		self.active_textures[channel as usize] = Some(tex_id);
+		self.switch_active_material_if_needed();		
+	}
 	pub fn use_texture_in_channel(&mut self, name: &str, channel: u8) {
 		// :TODO: avoid changing texture when it is already active
 		//		dbg!(&self.texture_manager);
@@ -731,7 +741,20 @@ impl Renderer {
 		let m = lm.top();
 		let pos = *m * *pos;
 		let pos = &pos;
-		let v = Vertex::from_pos_with_tex_coords_and_color(pos, &self.tex_coords, &self.color);
+		// new
+		let ti = self.active_textures[0].unwrap_or(0);
+		let at = self
+			.texture_manager
+			.get(ti as usize)
+			.unwrap_or(self.texture_manager.get(0).unwrap());
+
+		let tex_mtx = *at.mtx();
+		let user_tex_mtx = self.tex_matrix;
+		// -- new
+		let tc = &self.tex_coords;
+		let tc = user_tex_mtx.mul_vector2(&tc);
+		let tc = tex_mtx.mul_vector2(&tc);
+		let v = Vertex::from_pos_with_tex_coords_and_color(pos, &tc, &self.color);
 		self.vertices.push(v);
 		self.vertices.len() as u32 - 1
 	}
@@ -1077,6 +1100,7 @@ impl FontManager {
 
 mod animated_texture;
 pub use animated_texture::AnimatedTexture;
+pub use animated_texture::AnimatedTextureConfiguration;
 
 mod debug;
 pub use debug::Debug;

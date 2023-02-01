@@ -6,6 +6,7 @@ use crate::math::Vector3;
 use crate::math::Vector4;
 
 #[derive(Copy, Clone, PartialEq)]
+#[repr(C)]
 pub struct Matrix44 {
 	m: [f32; 16],
 }

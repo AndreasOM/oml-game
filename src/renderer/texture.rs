@@ -75,6 +75,10 @@ impl Texture {
 		&self.mtx
 	}
 
+	pub fn set_mtx(&mut self, mtx: &Matrix32 ) {
+		self.mtx = *mtx;
+	}
+
 	pub fn bind(&self) {
 		// :TODO: support texture channels
 		unsafe {

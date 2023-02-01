@@ -14,9 +14,21 @@ use crate::renderer::{
 	Vertex,
 };
 
+fn gl_check_error(line: u32) {
+	unsafe {
+		let e = gl::GetError();
+		match e {
+			gl::NO_ERROR => {},
+			e => {
+				tracing::error!("gl error: {} in line {}", e, line);
+			},
+		}
+	}
+}
 //#[derive(Debug)]
 #[derive(Derivative)]
 #[derivative(Debug)]
+#[repr(C)]
 pub struct Material {
 	#[derivative(Debug = "ignore")]
 	vertices: Vec<Vertex>,
@@ -156,8 +168,10 @@ impl Material {
 		if vertex_count == 0 {
 			return 0;
 		}
+		// tracing::debug!("Rendering Material with {} vertices", vertex_count);
 
-		unsafe {
+		gl_check_error(line!());
+		let vertex_count = unsafe {
 			gl::Enable(gl::BLEND);
 			gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
 
@@ -262,8 +276,10 @@ impl Material {
 			gl::DrawArrays(gl::TRIANGLES, 0, vertex_count as i32);
 			//			println!("Rendering {} vertices", vertex_count);
 			vertex_count as u32
-		}
+		};
+		gl_check_error(line!());
 		//		dbg!(&self);
+		vertex_count
 	}
 }
 /*

@@ -205,6 +205,16 @@ impl Window {
 						//	                	windowed_context.resize(physical_size)
 					},
 					WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
+					WindowEvent::MouseWheel { delta, .. } => {
+						// debug!("MouseWheel delta {:?}", delta );
+						match delta {
+							glutin::event::MouseScrollDelta::LineDelta(x, y) => {
+								window_update_context.mouse_wheel_line_delta.x = x;
+								window_update_context.mouse_wheel_line_delta.y = y;
+							},
+							_ => {},
+						}
+					},
 					WindowEvent::CursorMoved { position, .. } => {
 						let inner_size = windowed_context.window().inner_size();
 
@@ -261,6 +271,7 @@ impl Window {
 								VirtualKeyCode::Backslash => Some(92),
 								VirtualKeyCode::RBracket => Some(93),
 								VirtualKeyCode::Caret => Some(94),
+								VirtualKeyCode::Slash => Some(47),
 								_ => None,
 							} {
 								window_update_context.is_key_pressed[ascii] =
