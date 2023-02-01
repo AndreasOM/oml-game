@@ -63,6 +63,10 @@ impl Vector2 {
 		}
 	}
 
+	pub fn dot(&self, other: &Vector2) -> f32 {
+		self.x * other.x + self.y * other.y
+	}
+
 	// :TODO: seems to be duplicated from scale_vector2
 	pub fn scaled_vector2(&self, factor: &Vector2) -> Self {
 		Self {
