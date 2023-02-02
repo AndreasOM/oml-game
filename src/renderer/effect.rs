@@ -1,6 +1,6 @@
 use crate::renderer::{
 	//	Debug,
-	//	gl,
+	gl,
 	Program,
 	ShaderType,
 };
@@ -11,8 +11,14 @@ pub struct Effect {
 	id:      u16,
 	name:    String,
 	program: Program,
+	cull_face: bool,
+	depth_test: bool,
 }
 
+/*
+	gl::Enable(gl::CULL_FACE);
+	gl::Disable(gl::DEPTH_TEST);
+*/
 impl Effect {
 	pub fn create(
 		system: &mut System,
@@ -46,6 +52,8 @@ impl Effect {
 			id,
 			name: name.to_string(),
 			program,
+			cull_face: true,
+			depth_test: false,
 		}
 	}
 
@@ -54,6 +62,19 @@ impl Effect {
 	}
 
 	pub fn r#use(&mut self) {
+		unsafe {
+			if self.cull_face {
+				gl::Enable(gl::CULL_FACE);
+			} else {
+				gl::Disable(gl::CULL_FACE);
+			}
+			if self.depth_test {
+				gl::Enable(gl::DEPTH_TEST);
+			} else {
+				gl::Disable(gl::DEPTH_TEST);
+			}
+		}
+
 		self.program.r#use();
 	}
 
@@ -63,5 +84,14 @@ impl Effect {
 
 	pub fn program(&self) -> &Program {
 		&self.program
+	}
+
+	pub fn with_cull_face(mut self, cull_face: bool ) -> Self {
+		self.cull_face = cull_face;
+		self
+	}
+	pub fn with_depth_test(mut self, depth_test: bool ) -> Self {
+		self.depth_test = depth_test;
+		self
 	}
 }
