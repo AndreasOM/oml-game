@@ -349,6 +349,19 @@ impl Renderer {
 		self.effects.insert(effect.id(), effect);
 	}
 
+	pub fn find_effect_mut_and_then<F>(&mut self, name: &str, mut f: F) -> bool
+	where
+		F: FnMut(&mut Effect),
+	{
+		self.effects
+			.iter_mut()
+			.find(|(_i, e)| e.name() == name)
+			.map_or(false, |(_i, e)| {
+				f(e);
+				true
+			})
+	}
+
 	pub fn register_texture(&mut self, texture: Texture) -> u16 {
 		let index = self.texture_manager.add(texture);
 		if self.texture_manager.len() == 1 {
@@ -484,13 +497,16 @@ impl Renderer {
 
 		let debug = self.frame % 500 == 0;
 		// just to avoid ghost
+
+		// moved to Effect
+		/*
 		unsafe {
 			//			gl::Disable(gl::CULL_FACE);
 			gl::Enable(gl::CULL_FACE);
 			gl::Disable(gl::DEPTH_TEST);
 			//			gl::PolygonMode( gl::FRONT_AND_BACK, gl::LINE );
 		}
-
+		*/
 		//		println!("---");
 		// :TODO: fix rendering order
 		let mut material_indices = Vec::new();
@@ -1103,6 +1119,9 @@ impl FontManager {
 mod animated_texture;
 pub use animated_texture::AnimatedTexture;
 pub use animated_texture::AnimatedTextureConfiguration;
+
+mod blend_factor;
+pub use blend_factor::BlendFactor;
 
 mod debug;
 pub use debug::Debug;
