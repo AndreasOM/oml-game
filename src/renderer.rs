@@ -931,6 +931,18 @@ impl Renderer {
 		self.texture_manager.find_mut(|t| t.name() == name)
 	}
 
+	pub fn find_texture_mut_and_then<F>(&mut self, name: &str, mut f: F) -> bool
+	where
+		F: FnMut(&mut Texture),
+	{
+		self.texture_manager
+			.find_mut(|t| t.name() == name)
+			.map_or(false, |e| {
+				f(e);
+				true
+			})
+	}
+
 	pub fn print(&mut self, pos: &Vector2, size: &Vector2, alignment: &Vector2, text: &str) {
 		let old_texture_id = self.active_textures[0];
 		{
