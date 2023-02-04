@@ -93,11 +93,14 @@ impl DefaultTelemetry {
 			},
 		}
 	}
-	pub fn trace_f32(name: &str, value: f32) {
+	pub fn trace<'a, T>(name: &str, value: T)
+	where
+		T: TelemetryEntry<'a>,
+	{
 		match DEFAULT_TELEMETRY.lock() {
 			Ok(ref mut dt) => {
 				if let Some(dt) = &mut **dt {
-					dt.trace_f32(name, value)
+					dt.trace::<T>(name, value)
 				}
 			},
 			Err(e) => {
@@ -106,11 +109,14 @@ impl DefaultTelemetry {
 		}
 	}
 
-	pub fn get_f32(name: &str) -> Vec<Option<f32>> {
+	pub fn get<'a, T>(name: &str) -> Vec<Option<T>>
+	where
+		T: TelemetryEntry<'a>,
+	{
 		match DEFAULT_TELEMETRY.lock() {
 			Ok(ref mut dt) => {
 				if let Some(dt) = &mut **dt {
-					dt.get_f32(name)
+					dt.get::<T>(name)
 				} else {
 					Vec::new()
 				}
@@ -122,11 +128,62 @@ impl DefaultTelemetry {
 	}
 }
 
-#[derive(Debug, Default)]
-enum Entry {
+#[derive(Debug, Default, Copy, Clone)]
+pub enum Entry {
 	#[default]
 	None,
 	F32(f32),
+	F64(f64),
+}
+
+impl Entry {}
+
+pub trait TelemetryEntry<'a>: Into<Entry> + From<Entry> {
+	fn prefix() -> &'static str;
+}
+
+impl TelemetryEntry<'_> for f64 {
+	fn prefix() -> &'static str {
+		"F64"
+	}
+}
+
+impl From<f64> for Entry {
+	fn from(v: f64) -> Self {
+		Entry::F64(v)
+	}
+}
+
+impl From<Entry> for f64 {
+	fn from(e: Entry) -> Self {
+		if let Entry::F64(v) = e {
+			v
+		} else {
+			0.0
+		}
+	}
+}
+
+impl TelemetryEntry<'_> for f32 {
+	fn prefix() -> &'static str {
+		"F32"
+	}
+}
+
+impl From<f32> for Entry {
+	fn from(v: f32) -> Self {
+		Entry::F32(v)
+	}
+}
+
+impl From<Entry> for f32 {
+	fn from(e: Entry) -> Self {
+		if let Entry::F32(v) = e {
+			v
+		} else {
+			0.0
+		}
+	}
 }
 
 #[derive(Debug, Default)]
@@ -182,30 +239,46 @@ impl Telemetry {
 		self.maximum_length = maximum_length;
 	}
 
-	pub fn trace_f32(&mut self, name: &str, value: f32) {
-		let trace = self.traces.entry(format!("F32-{}", name)).or_default();
-
-		trace.add(Entry::F32(value));
+	fn prefix_for<'a, T>() -> &'static str
+	where
+		T: TelemetryEntry<'a>,
+	{
+		T::prefix()
 	}
 
-	pub fn get_f32(&mut self, name: &str) -> Vec<Option<f32>> {
-		if let Some(trace) = &self.traces.get(&format!("F32-{}", name)) {
+	fn name_for<'a, T>(name: &str) -> String
+	where
+		T: TelemetryEntry<'a>,
+	{
+		format!("{}-{}", Self::prefix_for::<T>(), name)
+	}
+
+	fn entry_from<'a, T>(value: T) -> Entry
+	where
+		T: TelemetryEntry<'a>,
+	{
+		value.into()
+	}
+
+	pub fn trace<'a, T>(&mut self, name: &str, value: T)
+	where
+		T: TelemetryEntry<'a>,
+	{
+		let trace = self.traces.entry(Self::name_for::<T>(name)).or_default();
+
+		trace.add(Self::entry_from(value));
+	}
+
+	pub fn get<'a, T>(&mut self, name: &str) -> Vec<Option<T>>
+	where
+		T: TelemetryEntry<'a> + std::convert::From<Entry>,
+	{
+		if let Some(trace) = &self.traces.get(&Self::name_for::<T>(name)) {
 			trace
 				.entries()
 				.iter()
-				.map(|me| {
-					me.as_ref().map({
-						|e| {
-							if let Entry::F32(value) = e {
-								*value
-							} else {
-								//todo!("Should never happen");
-								0.0
-							}
-						}
-					})
-				})
-				.collect::<Vec<Option<f32>>>()
+				.map(|me| me.as_ref().map({ |e| T::try_from(*e).unwrap() }))
+				.collect::<Vec<Option<T>>>()
 		} else {
 			Vec::new()
 		}

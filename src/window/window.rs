@@ -10,6 +10,7 @@ use tracing::*;
 
 use crate::math::Vector2;
 pub use crate::window::window_update_context::WindowUpdateContext;
+use crate::DefaultTelemetry;
 
 const TARGET_FPS: f64 = 60.0;
 const TARGET_FRAME_TIME: f64 = 1000.0 / TARGET_FPS;
@@ -367,9 +368,12 @@ impl Window {
 							let wait_millis = match TARGET_FRAME_TIME >= elapsed_time {
 								true => {
 									//debug!("Fast frame {} > {} (ms)", elapsed_time, TARGET_FRAME_TIME);
+									DefaultTelemetry::trace::<f64>("fast frame", elapsed_time);
 									TARGET_FRAME_TIME - elapsed_time
 								},
 								false => {
+									DefaultTelemetry::trace::<f64>("slow frame", elapsed_time);
+									/*
 									warn!(
 										"Slow frame {} > {} (ms)",
 										elapsed_time, TARGET_FRAME_TIME
@@ -377,6 +381,7 @@ impl Window {
 									if slowest_frame_ms < elapsed_time {
 										slowest_frame_ms = elapsed_time;
 									}
+									*/
 									slow_frame_count += 1;
 
 									0.0
