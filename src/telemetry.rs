@@ -128,12 +128,13 @@ impl DefaultTelemetry {
 	}
 }
 
-#[derive(Debug, Default, Copy, Clone)]
+#[derive(Debug, Default, Clone)]
 pub enum Entry {
 	#[default]
 	None,
 	F32(f32),
 	F64(f64),
+	STRING(String),
 }
 
 impl Entry {}
@@ -182,6 +183,28 @@ impl From<Entry> for f32 {
 			v
 		} else {
 			0.0
+		}
+	}
+}
+
+impl TelemetryEntry for String {
+	fn prefix() -> &'static str {
+		"STRING"
+	}
+}
+
+impl From<String> for Entry {
+	fn from(v: String) -> Self {
+		Entry::STRING(v)
+	}
+}
+
+impl From<Entry> for String {
+	fn from(e: Entry) -> Self {
+		if let Entry::STRING(v) = e {
+			v
+		} else {
+			String::default()
 		}
 	}
 }
@@ -277,7 +300,7 @@ impl Telemetry {
 			trace
 				.entries()
 				.iter()
-				.map(|me| me.as_ref().map(|e| T::from(*e)))
+				.map(|me| me.as_ref().map(|e| T::from(e.to_owned())))
 				.collect::<Vec<Option<T>>>()
 		} else {
 			Vec::new()
