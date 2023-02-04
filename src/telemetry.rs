@@ -139,7 +139,7 @@ pub enum Entry {
 
 impl Entry {}
 
-pub trait TelemetryEntry: Into<Entry> + From<Entry> {
+pub trait TelemetryEntry: Into<Entry> + From<Entry> + core::fmt::Debug {
 	fn prefix() -> &'static str;
 }
 
