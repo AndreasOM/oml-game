@@ -1,6 +1,6 @@
 use crate::math::{Matrix22, Matrix33, Vector2};
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct Matrix32 {
 	pub rot: Matrix22,
 	pub pos: Vector2,

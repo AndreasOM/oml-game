@@ -521,6 +521,10 @@ impl Renderer {
 			a.partial_cmp(&b).unwrap()
 		});
 
+		for t in self.texture_manager.iter_mut() {
+			t.update();
+		}
+
 		for i in material_indices {
 			let material = self.material_manager.get_mut(i).unwrap();
 

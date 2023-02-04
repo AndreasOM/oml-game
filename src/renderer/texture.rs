@@ -6,14 +6,15 @@ use crate::renderer::{gl, Debug};
 use crate::system::System;
 
 #[derive(Derivative)]
-#[derivative(Debug)]
+#[derivative(Debug, Default)]
 pub struct Texture {
-	name:   String,
-	hwid:   gl::types::GLuint,
-	width:  u32,
-	height: u32,
-	canvas: Option<Vec<u32>>,
-	mtx:    Matrix32,
+	name:                String,
+	hwid:                gl::types::GLuint,
+	width:               u32,
+	height:              u32,
+	canvas:              Option<Vec<u32>>,
+	mtx:                 Matrix32,
+	needs_canvas_update: bool,
 }
 
 impl Texture {
@@ -34,12 +35,13 @@ impl Texture {
 
 	pub fn create_from_atlas(name: &str, mtx: &Matrix32, atlas: &Texture) -> Self {
 		Self {
-			name:   name.to_string(),
-			hwid:   atlas.hwid() as u32,
-			width:  0, // :TODO:
+			name: name.to_string(),
+			hwid: atlas.hwid() as u32,
+			width: 0,  // :TODO:
 			height: 0, // :TODO:
 			canvas: None,
-			mtx:    *mtx,
+			mtx: *mtx,
+			..Default::default()
 		}
 	}
 
@@ -54,12 +56,13 @@ impl Texture {
 		}
 
 		Self {
-			name:   name.to_string(),
-			hwid:   hwid,
-			width:  0,
+			name: name.to_string(),
+			hwid: hwid,
+			width: 0,
 			height: 0,
 			canvas: None,
-			mtx:    Matrix32::identity(),
+			mtx: Matrix32::identity(),
+			..Default::default()
 		}
 	}
 
@@ -101,6 +104,18 @@ impl Texture {
 		}
 	}
 
+	// Note: This is called in the time critical part of the render path
+	// Do not do too much work, or _block_
+	pub fn update(&mut self) {
+		if self.needs_canvas_update {
+			self.needs_canvas_update = false;
+			self.update_canvas();
+		}
+	}
+
+	pub fn queue_canvas_update(&mut self) {
+		self.needs_canvas_update = true;
+	}
 	pub fn update_canvas(&mut self) {
 		if let Some(c) = &self.canvas {
 			unsafe {

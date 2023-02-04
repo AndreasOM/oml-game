@@ -106,7 +106,7 @@ impl DefaultTelemetry {
 		}
 	}
 
-	pub fn get_f32(name: &str) -> Vec<f32> {
+	pub fn get_f32(name: &str) -> Vec<Option<f32>> {
 		match DEFAULT_TELEMETRY.lock() {
 			Ok(ref mut dt) => {
 				if let Some(dt) = &mut **dt {
@@ -129,10 +129,36 @@ enum Entry {
 	F32(f32),
 }
 
+#[derive(Debug, Default)]
+struct Trace {
+	entries: VecDeque<Option<Entry>>,
+	current: Option<Entry>,
+}
+
+impl Trace {
+	pub fn add(&mut self, entry: Entry) {
+		//self.entries.push_back( entry );
+		self.current = Some(entry);
+	}
+
+	pub fn update(&mut self) {
+		self.entries.push_back(self.current.take());
+	}
+	pub fn enforce_maximum(&mut self, maximum: usize) {
+		while self.entries.len() > maximum {
+			self.entries.pop_front();
+		}
+	}
+
+	pub fn entries(&self) -> &VecDeque<Option<Entry>> {
+		&self.entries
+	}
+}
+
 #[derive(Debug)]
 pub struct Telemetry {
 	maximum_length: usize,
-	traces:         HashMap<String, VecDeque<Entry>>,
+	traces:         HashMap<String, Trace>,
 }
 
 impl Default for Telemetry {
@@ -147,9 +173,8 @@ impl Default for Telemetry {
 impl Telemetry {
 	pub fn update(&mut self) {
 		for (_, trace) in self.traces.iter_mut() {
-			while trace.len() > self.maximum_length {
-				trace.pop_front();
-			}
+			trace.update();
+			trace.enforce_maximum(self.maximum_length);
 		}
 	}
 
@@ -158,33 +183,36 @@ impl Telemetry {
 	}
 
 	pub fn trace_f32(&mut self, name: &str, value: f32) {
-		let trace = self
-			.traces
-			.entry(format!("F32-{}", name))
-			.or_insert(VecDeque::new());
+		let trace = self.traces.entry(format!("F32-{}", name)).or_default();
 
-		trace.push_back(Entry::F32(value));
+		trace.add(Entry::F32(value));
 	}
 
-	pub fn get_f32(&mut self, name: &str) -> Vec<f32> {
+	pub fn get_f32(&mut self, name: &str) -> Vec<Option<f32>> {
 		if let Some(trace) = &self.traces.get(&format!("F32-{}", name)) {
 			trace
+				.entries()
 				.iter()
-				.map(|e| {
-					if let Entry::F32(value) = e {
-						*value
-					} else {
-						todo!("Should never happen");
-						0.0
-					}
+				.map(|me| {
+					me.as_ref().map({
+						|e| {
+							if let Entry::F32(value) = e {
+								*value
+							} else {
+								//todo!("Should never happen");
+								0.0
+							}
+						}
+					})
 				})
-				.collect::<Vec<f32>>()
+				.collect::<Vec<Option<f32>>>()
 		} else {
 			Vec::new()
 		}
 	}
 }
 
+#[cfg(test)]
 mod tests {
 	//use super::*;
 	use crate::DefaultTelemetry;
