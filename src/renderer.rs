@@ -349,6 +349,19 @@ impl Renderer {
 		self.effects.insert(effect.id(), effect);
 	}
 
+	pub fn find_effect_mut_and_then<F>(&mut self, name: &str, mut f: F) -> bool
+	where
+		F: FnMut(&mut Effect),
+	{
+		self.effects
+			.iter_mut()
+			.find(|(_i, e)| e.name() == name)
+			.map_or(false, |(_i, e)| {
+				f(e);
+				true
+			})
+	}
+
 	pub fn register_texture(&mut self, texture: Texture) -> u16 {
 		let index = self.texture_manager.add(texture);
 		if self.texture_manager.len() == 1 {
@@ -484,13 +497,16 @@ impl Renderer {
 
 		let debug = self.frame % 500 == 0;
 		// just to avoid ghost
+
+		// moved to Effect
+		/*
 		unsafe {
 			//			gl::Disable(gl::CULL_FACE);
 			gl::Enable(gl::CULL_FACE);
 			gl::Disable(gl::DEPTH_TEST);
 			//			gl::PolygonMode( gl::FRONT_AND_BACK, gl::LINE );
 		}
-
+		*/
 		//		println!("---");
 		// :TODO: fix rendering order
 		let mut material_indices = Vec::new();
@@ -504,6 +520,10 @@ impl Renderer {
 
 			a.partial_cmp(&b).unwrap()
 		});
+
+		for t in self.texture_manager.iter_mut() {
+			t.update();
+		}
 
 		for i in material_indices {
 			let material = self.material_manager.get_mut(i).unwrap();
@@ -676,9 +696,9 @@ impl Renderer {
 		self.switch_active_material_if_needed();
 	}
 
-	pub fn use_texture_id_in_channel(&mut self, tex_id: u16, channel: u8 ) {
+	pub fn use_texture_id_in_channel(&mut self, tex_id: u16, channel: u8) {
 		self.active_textures[channel as usize] = Some(tex_id);
-		self.switch_active_material_if_needed();		
+		self.switch_active_material_if_needed();
 	}
 	pub fn use_texture_in_channel(&mut self, name: &str, channel: u8) {
 		// :TODO: avoid changing texture when it is already active
@@ -832,10 +852,10 @@ impl Renderer {
 			.texture_manager
 			.get(ti as usize)
 			.unwrap_or(self.texture_manager.get(0).unwrap());
-
-		let tex_mtx = *at.mtx();
-		let user_tex_mtx = self.tex_matrix;
-
+		/*
+				let tex_mtx = *at.mtx();
+				let user_tex_mtx = self.tex_matrix;
+		*/
 		let mut v = [0u32; 4];
 
 		// :TODO: future optimization once we have full matrix implementation
@@ -846,10 +866,12 @@ impl Renderer {
 			let p = p.scale_vector2(&size);
 			let p = mtx.mul_vector2(&p).add(&pos);
 
-			// :TODO: decide if we might want to move this calculation to set_tex_coords
+			// this calculation has been moved into add_vertex
 			let t = tex_coords[i];
+			/*
 			let t = user_tex_mtx.mul_vector2(&t);
 			let t = tex_mtx.mul_vector2(&t);
+			*/
 
 			self.set_tex_coords(&t);
 			v[i] = self.add_vertex(&p);
@@ -911,6 +933,18 @@ impl Renderer {
 	*/
 	pub fn find_texture_mut(&mut self, name: &str) -> Option<&mut Texture> {
 		self.texture_manager.find_mut(|t| t.name() == name)
+	}
+
+	pub fn find_texture_mut_and_then<F>(&mut self, name: &str, mut f: F) -> bool
+	where
+		F: FnMut(&mut Texture),
+	{
+		self.texture_manager
+			.find_mut(|t| t.name() == name)
+			.map_or(false, |e| {
+				f(e);
+				true
+			})
 	}
 
 	pub fn print(&mut self, pos: &Vector2, size: &Vector2, alignment: &Vector2, text: &str) {
@@ -1101,6 +1135,9 @@ impl FontManager {
 mod animated_texture;
 pub use animated_texture::AnimatedTexture;
 pub use animated_texture::AnimatedTextureConfiguration;
+
+mod blend_factor;
+pub use blend_factor::BlendFactor;
 
 mod debug;
 pub use debug::Debug;

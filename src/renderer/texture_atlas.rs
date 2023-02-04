@@ -68,6 +68,7 @@ fn simple_format_u32(f: &str, n: u32) -> String {
 }
 
 impl TextureAtlas {
+	#[deprecated(since = "0.33.0", note = "please use texture references instead")]
 	pub fn load_all(system: &mut System, renderer: &mut Renderer, template: &str) -> usize {
 		let fs = system.default_filesystem_mut();
 

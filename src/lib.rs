@@ -5,4 +5,7 @@ pub use game::Game;
 pub mod math;
 pub mod renderer;
 pub mod system;
+pub mod telemetry;
 pub mod window;
+pub use telemetry::DefaultTelemetry;
+pub use telemetry::Telemetry;

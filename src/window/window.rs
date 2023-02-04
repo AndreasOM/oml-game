@@ -85,6 +85,14 @@ impl Window {
 		self.size = *size;
 	}
 
+	pub fn scale_factor(&self) -> f64 {
+		if let Some(ctx) = &self.windowed_context {
+			ctx.window().scale_factor()
+		} else {
+			1.0
+		}
+	}
+
 	pub fn setup(&mut self) -> anyhow::Result<()> {
 		let el = EventLoop::new();
 		let wb = WindowBuilder::new()
@@ -224,7 +232,7 @@ impl Window {
 						let mouse_y = (h - position.y) / h;
 						window_update_context.mouse_pos.x = mouse_x as f32;
 						window_update_context.mouse_pos.y = mouse_y as f32;
-						//	                	dbg!(&position, &inner_size, &mouse_x, &mouse_y);
+						//tracing::debug!("{:?} {:?} {} {}", &position, &inner_size, &mouse_x, &mouse_y);
 					},
 					WindowEvent::MouseInput { state, button, .. } => {
 						let button_index = match button {

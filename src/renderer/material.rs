@@ -173,7 +173,12 @@ impl Material {
 		gl_check_error(line!());
 		let vertex_count = unsafe {
 			gl::Enable(gl::BLEND);
-			gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
+
+			// moved to Effect
+			// gl::BlendFunc(gl::SRC_ALPHA, gl::ONE_MINUS_SRC_ALPHA);
+
+			// premultiplied alpha
+			//gl::BlendFunc(gl::ONE, gl::ONE_MINUS_SRC_ALPHA);
 
 			//			gl::Disable( gl::BLEND );
 			//			gl::BlendFunc( gl::ONE, gl::ONE );

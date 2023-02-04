@@ -6,6 +6,11 @@ pub struct Matrix22 {
 	pub y: Vector2,
 }
 
+impl Default for Matrix22 {
+	fn default() -> Self {
+		Self::identity()
+	}
+}
 impl Matrix22 {
 	pub fn new(x: &Vector2, y: &Vector2) -> Self {
 		Self { x: *x, y: *y }

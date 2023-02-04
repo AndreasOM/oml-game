@@ -75,6 +75,15 @@ pub fn debug_renderer_add_line(start: &Vector2, end: &Vector2, width: f32, color
 		}
 	}
 }
+pub fn debug_renderer_add_text(pos: &Vector2, text: &str, scale: f32, width: f32, color: &Color) {
+	let mut lock = DEFAULT_DEBUGRENDERER.try_lock();
+	if let Ok(ref mut dr) = lock {
+		if let Some(dr) = &mut **dr {
+			dr.add_text(pos, text, scale, width, color);
+		}
+	}
+}
+
 pub fn debug_renderer_add_rectangle(rect: &Rectangle, width: f32, color: &Color) {
 	let mut lock = DEFAULT_DEBUGRENDERER.try_lock();
 	if let Ok(ref mut dr) = lock {
