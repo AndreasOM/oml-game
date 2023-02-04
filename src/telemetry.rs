@@ -93,9 +93,9 @@ impl DefaultTelemetry {
 			},
 		}
 	}
-	pub fn trace<'a, T>(name: &str, value: T)
+	pub fn trace<T>(name: &str, value: T)
 	where
-		T: TelemetryEntry<'a>,
+		T: TelemetryEntry,
 	{
 		match DEFAULT_TELEMETRY.lock() {
 			Ok(ref mut dt) => {
@@ -109,9 +109,9 @@ impl DefaultTelemetry {
 		}
 	}
 
-	pub fn get<'a, T>(name: &str) -> Vec<Option<T>>
+	pub fn get<T>(name: &str) -> Vec<Option<T>>
 	where
-		T: TelemetryEntry<'a>,
+		T: TelemetryEntry,
 	{
 		match DEFAULT_TELEMETRY.lock() {
 			Ok(ref mut dt) => {
@@ -138,11 +138,11 @@ pub enum Entry {
 
 impl Entry {}
 
-pub trait TelemetryEntry<'a>: Into<Entry> + From<Entry> {
+pub trait TelemetryEntry: Into<Entry> + From<Entry> {
 	fn prefix() -> &'static str;
 }
 
-impl TelemetryEntry<'_> for f64 {
+impl TelemetryEntry for f64 {
 	fn prefix() -> &'static str {
 		"F64"
 	}
@@ -164,7 +164,7 @@ impl From<Entry> for f64 {
 	}
 }
 
-impl TelemetryEntry<'_> for f32 {
+impl TelemetryEntry for f32 {
 	fn prefix() -> &'static str {
 		"F32"
 	}
@@ -239,45 +239,45 @@ impl Telemetry {
 		self.maximum_length = maximum_length;
 	}
 
-	fn prefix_for<'a, T>() -> &'static str
+	fn prefix_for<T>() -> &'static str
 	where
-		T: TelemetryEntry<'a>,
+		T: TelemetryEntry,
 	{
 		T::prefix()
 	}
 
-	fn name_for<'a, T>(name: &str) -> String
+	fn name_for<T>(name: &str) -> String
 	where
-		T: TelemetryEntry<'a>,
+		T: TelemetryEntry,
 	{
 		format!("{}-{}", Self::prefix_for::<T>(), name)
 	}
 
-	fn entry_from<'a, T>(value: T) -> Entry
+	fn entry_from<T>(value: T) -> Entry
 	where
-		T: TelemetryEntry<'a>,
+		T: TelemetryEntry,
 	{
 		value.into()
 	}
 
-	pub fn trace<'a, T>(&mut self, name: &str, value: T)
+	pub fn trace<T>(&mut self, name: &str, value: T)
 	where
-		T: TelemetryEntry<'a>,
+		T: TelemetryEntry,
 	{
 		let trace = self.traces.entry(Self::name_for::<T>(name)).or_default();
 
 		trace.add(Self::entry_from(value));
 	}
 
-	pub fn get<'a, T>(&mut self, name: &str) -> Vec<Option<T>>
+	pub fn get<T>(&mut self, name: &str) -> Vec<Option<T>>
 	where
-		T: TelemetryEntry<'a> + std::convert::From<Entry>,
+		T: TelemetryEntry + std::convert::From<Entry>,
 	{
 		if let Some(trace) = &self.traces.get(&Self::name_for::<T>(name)) {
 			trace
 				.entries()
 				.iter()
-				.map(|me| me.as_ref().map({ |e| T::try_from(*e).unwrap() }))
+				.map(|me| me.as_ref().map(|e| T::from(*e)))
 				.collect::<Vec<Option<T>>>()
 		} else {
 			Vec::new()
