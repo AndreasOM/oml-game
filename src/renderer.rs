@@ -142,6 +142,7 @@ impl Color {
 
 #[derive(Debug, Copy, Clone)]
 #[allow(dead_code)] // clippy gives a false positive here
+#[repr(C)]
 pub struct Vertex {
 	pos:        [f32; 3],
 	tex_coords: [f32; 2],
