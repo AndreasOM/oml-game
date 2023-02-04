@@ -1,7 +1,22 @@
 //rgb(244, 67, 54)
 use once_cell::sync::Lazy;
 static PAL1: Lazy<Vec<Color>> = Lazy::new(|| {
-	[
+	//let mut i = 0.0;
+	//let s = 0.01;
+	let pal = [
+		/* :TODO: experiment with rotating Hsv colors
+			Color::from_hsv({i+=s;i*1.0},0.5,0.8),
+			Color::from_hsv({i+=s;i*1.0},0.5,0.8),
+			Color::from_hsv({i+=s;i*1.0},0.5,0.8),
+			Color::from_hsv({i+=s;i*1.0},0.5,0.8),
+			Color::from_hsv({i+=s;i*1.0},0.5,0.8),
+			Color::from_hsv({i+=s;i*1.0},0.5,0.8),
+			Color::from_hsv({i+=s;i*1.0},0.5,0.8),
+			Color::from_hsv({i+=s;i*1.0},0.5,0.8),
+			Color::from_hsv({i+=s;i*1.0},0.5,0.8),
+			Color::from_hsv({i+=s;i*1.0},0.5,0.8),
+			Color::from_hsv({i+=s;i*1.0},0.5,0.8),
+		*/
 		Color::from_rgba_u8(244, 67, 54, 255),
 		Color::from_rgba_u8(33, 150, 243, 255),
 		Color::from_rgba_u8(139, 195, 74, 255),
@@ -12,7 +27,8 @@ static PAL1: Lazy<Vec<Color>> = Lazy::new(|| {
 		Color::from_rgba_u8(0, 150, 136, 255),
 		Color::from_rgba_u8(255, 152, 0, 255),
 	]
-	.to_vec()
+	.to_vec();
+	pal
 });
 static mut PAL1_INDEX: usize = 0;
 
@@ -39,7 +55,7 @@ impl Color {
 	pub fn pal(index: usize) -> &'static Self {
 		let index = index % PAL1.len();
 		unsafe {
-			PAL1_INDEX = index;
+			PAL1_INDEX = index + 1;
 		}
 		&PAL1[index]
 	}
