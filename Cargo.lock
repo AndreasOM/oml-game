@@ -1350,6 +1350,7 @@ dependencies = [
  "image",
  "oml-audio",
  "once_cell",
+ "png",
  "regex",
  "serde",
  "serde_yaml",

@@ -1,4 +1,5 @@
 use std::collections::{HashMap, VecDeque};
+use std::io::Cursor;
 use std::sync::mpsc;
 
 use backtrace::Backtrace;
@@ -63,6 +64,20 @@ enum Command {
 	LoadTexture(u16, String),
 }
 
+#[derive(Debug)]
+struct QueuedScreenshot {
+	delay:    usize,          // how many frames to wait before starting
+	filename: Option<String>, // template for the filename
+	frames:   usize,          // number of frames to shoot
+	taken:    usize,          // number of frames shot so far
+}
+
+#[derive(Debug, Default)]
+struct ReadyScreenshot {
+	filename: String,
+	data:     Vec<u8>,
+}
+
 const MAX_TEXTURE_CHANNELS: usize = 4;
 #[derive(Debug)]
 pub struct Renderer {
@@ -102,6 +117,8 @@ pub struct Renderer {
 	command_rx:           Option<mpsc::Receiver<Command>>,
 	command_tx:           Option<mpsc::Sender<Command>>,
 	//textures_loading:     RwLock<HashSet<String>>,
+	queued_screenshots:   Vec<QueuedScreenshot>,
+	ready_screenshots:    VecDeque<ReadyScreenshot>,
 }
 
 impl Renderer {
@@ -137,9 +154,11 @@ impl Renderer {
 
 			backtrace_on_missing: false,
 
-			command_rx: None,
-			command_tx: None,
+			command_rx:         None,
+			command_tx:         None,
 			//textures_loading: RwLock::new(HashSet::new()),
+			queued_screenshots: Vec::new(),
+			ready_screenshots:  VecDeque::new(),
 		}
 	}
 
@@ -219,6 +238,15 @@ impl Renderer {
 						};
 					},
 				};
+			}
+			// save one ready screenshot
+			if let Some(rs) = self.ready_screenshots.pop_front() {
+				match self.save_screenshot(system, rs) {
+					Ok(()) => {},
+					Err(e) => {
+						tracing::error!("Failed writing screenshot {}", e);
+					},
+				}
 			}
 		}
 	}
@@ -436,6 +464,20 @@ impl Renderer {
 			gl::Flush();
 		}
 
+		let screenshots = self.update_queued_screenshots();
+		if !screenshots.is_empty() {
+			// tracing::debug!("Screenshots: {:#?}", screenshots);
+			for s in screenshots {
+				let s = format!("{}-{:06}", s, self.frame);
+				match self.take_screenshot(&s) {
+					Ok(_) => {},
+					Err(e) => {
+						tracing::error!("Failed taking screenshot {}", e);
+					},
+				}
+			}
+		}
+
 		if debug {
 			//			dbg!(&self.material_manager);
 			println!(
@@ -465,6 +507,9 @@ impl Renderer {
 		&self.size
 	}
 
+	pub fn frame(&self) -> u64 {
+		self.frame
+	}
 	pub fn set_size(&mut self, size: &Vector2) {
 		self.size = *size;
 	}
@@ -894,6 +939,145 @@ impl Renderer {
 			3.0,
 			&Color::from_rgba(0.4, 0.75, 0.3, 0.6),
 		);
+	}
+
+	fn save_screenshot(
+		&self,
+		system: &mut System,
+		ready_screenshots: ReadyScreenshot,
+	) -> anyhow::Result<()> {
+		let fs = system.savegame_filesystem_mut();
+		if !fs.writable() {
+			anyhow::bail!("Filesystem is not writable {:?}", fs);
+		}
+		let mut f = fs.create(&ready_screenshots.filename, false); // :TODO: overwrite?
+		if !f.is_valid() {
+			anyhow::bail!("couldn't write to {:?}", f);
+		}
+
+		tracing::debug!("Saving");
+		let mut saved = 0;
+		for b in ready_screenshots.data.iter() {
+			f.write_u8(*b);
+			saved += 1;
+			if saved % 1024 == 0 {
+				//				tracing::debug!("{} kb ({})", saved / 1024, saved );
+			}
+		}
+
+		tracing::debug!("{:?}", system.savegame_filesystem_mut());
+		tracing::debug!(
+			"Wrote {}/{} bytes to {:?}",
+			f.pos(),
+			ready_screenshots.data.len(),
+			f
+		);
+
+		Ok(())
+	}
+	fn take_screenshot(&mut self, filename: &str) -> anyhow::Result<()> {
+		tracing::debug!("save_screenshot: {}", filename);
+		let w = self.viewport_size.x as usize;
+		let h = self.viewport_size.y as usize;
+		let len = w * h * 4;
+		let v: Vec<u8> = vec![0; len];
+		let mut buffer = v.into_boxed_slice();
+		unsafe {
+			// :TODO:
+			// gl::ReadBuffer
+			// gl::PixelTransfer
+			// gl::PixelMap
+			gl::ReadPixels(
+				0,
+				0,
+				w as i32,
+				h as i32,
+				gl::RGBA,
+				gl::UNSIGNED_BYTE,
+				buffer.as_mut_ptr() as *mut core::ffi::c_void,
+			);
+		}
+
+		// flip buffer upside down
+		// :TODO: we can make this far more efficient
+		let mut buffer_flipped = vec![0; len];
+		for y in 0..h {
+			for x in 0..w {
+				let sp = (w * y + x) * 4;
+				let dp = (w * (h - y - 1) + x) * 4;
+				buffer_flipped[dp] = buffer[sp];
+				buffer_flipped[dp + 1] = buffer[sp + 1];
+				buffer_flipped[dp + 2] = buffer[sp + 2];
+				buffer_flipped[dp + 3] = buffer[sp + 3];
+			}
+		}
+
+		let buffer = buffer_flipped;
+
+		let mut png_buffer = Vec::new();
+		{
+			let mut encoder = png::Encoder::new(Cursor::new(&mut png_buffer), w as u32, h as u32);
+			encoder.set_color(png::ColorType::Rgba);
+			encoder.set_depth(png::BitDepth::Eight);
+
+			encoder
+				.add_itxt_chunk("Creator".to_string(), "oml-game".to_string())
+				.unwrap();
+			let mut writer = encoder.write_header().unwrap();
+			writer.write_image_data(&buffer).unwrap();
+			writer.write_image_data(&buffer).unwrap();
+		}
+
+		if png_buffer[0] != 0x89 {
+			anyhow::bail!("Broken header from PNG");
+		} else {
+			tracing::debug!("OK");
+		}
+
+		self.ready_screenshots.push_back(ReadyScreenshot {
+			filename: format!("{}.png", filename),
+			data:     png_buffer,
+		});
+
+		Ok(())
+	}
+	pub fn queue_screenshot(&mut self, delay: usize, frames: usize, filename: Option<&str>) {
+		let qs = QueuedScreenshot {
+			delay,
+			frames,
+			filename: filename.map(|s| s.to_owned()),
+			taken: 0,
+		};
+
+		self.queued_screenshots.push(qs);
+	}
+
+	pub(crate) fn update_queued_screenshots(&mut self) -> Vec<String> {
+		let mut r = Vec::new();
+		let mut to_remove = Vec::new();
+		for i in 1..self.queued_screenshots.len() {
+			let mut qs = &mut self.queued_screenshots[i];
+			qs.delay = qs.delay.saturating_sub(1);
+			if qs.delay <= 0 {
+				qs.taken += 1;
+				if qs.taken >= qs.frames {
+					to_remove.push(i);
+				}
+				let filename: String = qs
+					.filename
+					.as_ref()
+					.unwrap_or(&"ScreenShot".to_string())
+					.clone();
+				r.push(filename);
+			}
+		}
+
+		for i in to_remove {
+			// self.queued_screenshots.swap_remove( i );
+			self.queued_screenshots.remove(i);
+		}
+
+		r
 	}
 }
 
