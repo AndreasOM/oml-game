@@ -1,5 +1,12 @@
 use crate::math::Vector2;
 
+#[derive(Debug)]
+#[repr(u8)]
+pub enum ModifierKey {
+	Shift,
+	Ctrl,
+	Alt,
+}
 #[derive(Debug, Copy, Clone)]
 pub struct WindowUpdateContext {
 	pub time_step:              f64,
@@ -9,6 +16,7 @@ pub struct WindowUpdateContext {
 	pub mouse_wheel_line_delta: Vector2,
 	pub mouse_buttons:          [bool; 3], // left middle right
 	pub is_key_pressed:         [bool; 256],
+	is_modifier_pressed:        [bool; 256],
 	pub window_size:            Vector2,
 	pub window_pos:             Vector2,
 	pub window_changed:         bool,
@@ -31,6 +39,7 @@ impl WindowUpdateContext {
 			mouse_buttons:           [false, false, false],
 			is_key_pressed:          [false; 256],
 			is_function_key_pressed: [false; 16],
+			is_modifier_pressed:     [false; 256],
 			window_size:             Vector2::zero(),
 			window_pos:              Vector2::zero(),
 			window_changed:          false,
@@ -64,6 +73,14 @@ impl WindowUpdateContext {
 
 	pub fn is_key_pressed(&self, key: u8) -> bool {
 		self.is_key_pressed[key as usize]
+	}
+
+	pub fn set_modifier_pressed(&mut self, modifier: ModifierKey, pressed: bool) {
+		self.is_modifier_pressed[modifier as usize] = pressed;
+	}
+
+	pub fn is_modifier_pressed(&self, modifier: ModifierKey) -> bool {
+		self.is_modifier_pressed[modifier as usize]
 	}
 
 	pub fn was_function_key_pressed(&self, key: u8) -> bool {
