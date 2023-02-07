@@ -63,6 +63,15 @@ impl Filesystem for FilesystemLayered {
 		false
 	}
 
+	fn writable(&self) -> bool {
+		for fs in self.filesystems.iter() {
+			if fs.writable() {
+				return true;
+			}
+		}
+		false
+	}
+
 	fn name(&self) -> &str {
 		""
 	}
