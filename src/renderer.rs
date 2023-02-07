@@ -1025,7 +1025,6 @@ impl Renderer {
 				.unwrap();
 			let mut writer = encoder.write_header().unwrap();
 			writer.write_image_data(&buffer).unwrap();
-			writer.write_image_data(&buffer).unwrap();
 		}
 
 		if png_buffer[0] != 0x89 {
