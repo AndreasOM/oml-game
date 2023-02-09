@@ -60,6 +60,11 @@ impl WindowUpdateContext {
 		//		}
 	}
 
+	pub fn fake_mouse_button_press(&mut self, button_index: usize) {
+		self.mouse_buttons[button_index] = true;
+		self.previous_mouse_buttons[button_index] = false;
+	}
+
 	pub fn was_mouse_button_pressed(&self, button_index: usize) -> bool {
 		self.mouse_buttons[button_index] && !self.previous_mouse_buttons[button_index]
 	}
