@@ -79,6 +79,51 @@ impl DefaultTelemetry {
 		}
 	}
 
+	pub fn traces_info() -> Vec<TraceInfo> {
+		match DEFAULT_TELEMETRY.lock() {
+			Ok(ref mut dt) => {
+				if let Some(dt) = &mut **dt {
+					dt.traces_info()
+				} else {
+					Vec::default()
+				}
+			},
+			Err(e) => {
+				panic!("DefaultTelemetry -> {:?}", e);
+			},
+		}
+	}
+
+	pub fn frames() -> usize {
+		match DEFAULT_TELEMETRY.lock() {
+			Ok(ref mut dt) => {
+				if let Some(dt) = &mut **dt {
+					dt.frames()
+				} else {
+					0
+				}
+			},
+			Err(e) => {
+				panic!("DefaultTelemetry -> {:?}", e);
+			},
+		}
+	}
+
+	pub fn maximum_length() -> usize {
+		match DEFAULT_TELEMETRY.lock() {
+			Ok(ref mut dt) => {
+				if let Some(dt) = &mut **dt {
+					dt.maximum_length()
+				} else {
+					0
+				}
+			},
+			Err(e) => {
+				panic!("DefaultTelemetry -> {:?}", e);
+			},
+		}
+	}
+
 	pub fn set_maximum_length(maximum_length: usize) {
 		match DEFAULT_TELEMETRY.lock() {
 			Ok(ref mut dt) => {
@@ -128,6 +173,34 @@ impl DefaultTelemetry {
 	}
 }
 
+#[derive(Debug)]
+pub struct TraceInfo {
+	id:            String,
+	name:          String,
+	entry_type_id: std::any::TypeId,
+}
+
+impl Default for TraceInfo {
+	fn default() -> Self {
+		Self {
+			id:            String::default(),
+			name:          String::default(),
+			entry_type_id: std::any::TypeId::of::<()>(),
+		}
+	}
+}
+
+impl TraceInfo {
+	pub fn id(&self) -> &str {
+		&self.id
+	}
+	pub fn name(&self) -> &str {
+		&self.name
+	}
+	pub fn entry_type_id(&self) -> std::any::TypeId {
+		self.entry_type_id
+	}
+}
 #[derive(Debug, Default, Clone)]
 pub enum Entry {
 	#[default]
@@ -209,10 +282,23 @@ impl From<Entry> for String {
 	}
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 struct Trace {
-	entries: VecDeque<Option<Entry>>,
-	current: Option<Entry>,
+	name:          String,
+	entries:       VecDeque<Option<Entry>>,
+	current:       Option<Entry>,
+	entry_type_id: std::any::TypeId,
+}
+
+impl Default for Trace {
+	fn default() -> Self {
+		Self {
+			name:          String::default(),
+			entries:       VecDeque::default(),
+			current:       None,
+			entry_type_id: std::any::TypeId::of::<()>(),
+		}
+	}
 }
 
 impl Trace {
@@ -239,11 +325,13 @@ impl Trace {
 pub struct Telemetry {
 	maximum_length: usize,
 	traces:         HashMap<String, Trace>,
+	frames:         usize,
 }
 
 impl Default for Telemetry {
 	fn default() -> Self {
 		Self {
+			frames:         0,
 			maximum_length: 1000,
 			traces:         HashMap::new(),
 		}
@@ -256,10 +344,29 @@ impl Telemetry {
 			trace.update();
 			trace.enforce_maximum(self.maximum_length);
 		}
+		self.frames += 1;
+	}
+
+	pub fn frames(&self) -> usize {
+		self.frames
 	}
 
 	pub fn set_maximum_length(&mut self, maximum_length: usize) {
 		self.maximum_length = maximum_length;
+	}
+	pub fn maximum_length(&self) -> usize {
+		self.maximum_length
+	}
+
+	pub fn traces_info(&self) -> Vec<TraceInfo> {
+		self.traces
+			.iter()
+			.map(|(k, t)| TraceInfo {
+				id:            k.clone(),
+				name:          t.name.clone(),
+				entry_type_id: t.entry_type_id,
+			})
+			.collect()
 	}
 
 	fn prefix_for<T>() -> &'static str
@@ -287,7 +394,11 @@ impl Telemetry {
 	where
 		T: TelemetryEntry,
 	{
-		let trace = self.traces.entry(Self::name_for::<T>(name)).or_default();
+		let id = Self::name_for::<T>(name);
+		let trace = self.traces.entry(id).or_insert(Trace {
+			name: name.to_string(),
+			..Default::default()
+		});
 
 		trace.add(Self::entry_from(value));
 	}
