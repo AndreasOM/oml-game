@@ -1025,7 +1025,6 @@ impl Renderer {
 				.unwrap();
 			let mut writer = encoder.write_header().unwrap();
 			writer.write_image_data(&buffer).unwrap();
-			writer.write_image_data(&buffer).unwrap();
 		}
 
 		if png_buffer[0] != 0x89 {
@@ -1055,7 +1054,7 @@ impl Renderer {
 	pub(crate) fn update_queued_screenshots(&mut self) -> Vec<String> {
 		let mut r = Vec::new();
 		let mut to_remove = Vec::new();
-		for i in 1..self.queued_screenshots.len() {
+		for i in 0..self.queued_screenshots.len() {
 			let mut qs = &mut self.queued_screenshots[i];
 			qs.delay = qs.delay.saturating_sub(1);
 			if qs.delay <= 0 {

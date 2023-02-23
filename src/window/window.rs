@@ -303,7 +303,29 @@ impl Window {
 								window_update_context.is_function_key_pressed[fkey] =
 									state == ElementState::Pressed;
 							} else {
-								println!("Unmapped KeyboardInput {:?} !", &virtual_code);
+								match virtual_code {
+									VirtualKeyCode::LShift | VirtualKeyCode::RShift => {
+										window_update_context.set_modifier_pressed(
+											crate::window::ModifierKey::Shift,
+											state == ElementState::Pressed,
+										);
+									},
+									VirtualKeyCode::LControl | VirtualKeyCode::RControl => {
+										window_update_context.set_modifier_pressed(
+											crate::window::ModifierKey::Ctrl,
+											state == ElementState::Pressed,
+										);
+									},
+									VirtualKeyCode::LAlt | VirtualKeyCode::RAlt => {
+										window_update_context.set_modifier_pressed(
+											crate::window::ModifierKey::Alt,
+											state == ElementState::Pressed,
+										);
+									},
+									vc => {
+										println!("Unmapped KeyboardInput {:?} !", &vc)
+									},
+								};
 							}
 						},
 					},
@@ -367,12 +389,22 @@ impl Window {
 								.as_millis() as f64;
 							let wait_millis = match TARGET_FRAME_TIME >= elapsed_time {
 								true => {
-									//debug!("Fast frame {} > {} (ms)", elapsed_time, TARGET_FRAME_TIME);
-									DefaultTelemetry::trace::<f64>("fast frame", elapsed_time);
+									tracing::debug!(
+										"Fast frame {} > {} (ms)",
+										elapsed_time,
+										TARGET_FRAME_TIME
+									);
+									DefaultTelemetry::trace::<f64>(
+										"fast frame",
+										elapsed_time / 1000.0,
+									);
 									TARGET_FRAME_TIME - elapsed_time
 								},
 								false => {
-									DefaultTelemetry::trace::<f64>("slow frame", elapsed_time);
+									DefaultTelemetry::trace::<f64>(
+										"slow frame",
+										elapsed_time / 1000.0,
+									);
 									/*
 									warn!(
 										"Slow frame {} > {} (ms)",
