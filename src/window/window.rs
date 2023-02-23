@@ -389,11 +389,13 @@ impl Window {
 								.as_millis() as f64;
 							let wait_millis = match TARGET_FRAME_TIME >= elapsed_time {
 								true => {
+									/*
 									tracing::debug!(
 										"Fast frame {} > {} (ms)",
 										elapsed_time,
 										TARGET_FRAME_TIME
 									);
+									*/
 									DefaultTelemetry::trace::<f64>(
 										"fast frame",
 										elapsed_time / 1000.0,

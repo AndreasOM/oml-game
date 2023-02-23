@@ -80,6 +80,10 @@ impl WindowUpdateContext {
 		self.is_key_pressed[key as usize]
 	}
 
+	pub fn is_space_pressed(&self) -> bool {
+		self.is_space_pressed
+	}
+
 	pub fn set_modifier_pressed(&mut self, modifier: ModifierKey, pressed: bool) {
 		self.is_modifier_pressed[modifier as usize] = pressed;
 	}
