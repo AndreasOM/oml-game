@@ -249,8 +249,10 @@ impl Window {
 							glutin::event::MouseButton::Right => 2,
 							_ => 0,
 						};
-						window_update_context.mouse_buttons[button_index] =
-							state == glutin::event::ElementState::Pressed;
+						window_update_context.set_mouse_button(
+							button_index,
+							state == glutin::event::ElementState::Pressed,
+						)
 
 						//	                	dbg!(&state, &button, &window_update_context.mouse_buttons);
 					},

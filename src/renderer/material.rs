@@ -242,6 +242,9 @@ impl Material {
 							Uniform::F32(v) => {
 								gl::Uniform1f(l, *v);
 							},
+							Uniform::MATRIX44(mtx44) => {
+								gl::UniformMatrix4fv(l, 1, 0, mtx44.as_ptr() as *const _);
+							},
 							//							_ => todo!("Uniform type not supported. {:?}", v ),
 						}
 					},
