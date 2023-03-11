@@ -231,9 +231,16 @@ impl Window {
 						let h = inner_size.height as f64;
 						let mouse_x = position.x / w;
 						let mouse_y = (h - position.y) / h;
+						let scale = 0.5;
 						window_update_context.mouse_pos.x = mouse_x as f32;
 						window_update_context.mouse_pos.y = mouse_y as f32;
-						//tracing::debug!("{:?} {:?} {} {}", &position, &inner_size, &mouse_x, &mouse_y);
+						tracing::debug!(
+							"{:?} {:?} {} {}",
+							&position,
+							&inner_size,
+							&mouse_x,
+							&mouse_y
+						);
 					},
 					WindowEvent::MouseInput { state, button, .. } => {
 						let button_index = match button {
@@ -242,8 +249,10 @@ impl Window {
 							glutin::event::MouseButton::Right => 2,
 							_ => 0,
 						};
-						window_update_context.mouse_buttons[button_index] =
-							state == glutin::event::ElementState::Pressed;
+						window_update_context.set_mouse_button(
+							button_index,
+							state == glutin::event::ElementState::Pressed,
+						)
 
 						//	                	dbg!(&state, &button, &window_update_context.mouse_buttons);
 					},
@@ -281,6 +290,7 @@ impl Window {
 								VirtualKeyCode::RBracket => Some(93),
 								VirtualKeyCode::Caret => Some(94),
 								VirtualKeyCode::Slash => Some(47),
+								VirtualKeyCode::Grave => Some(96),
 								_ => None,
 							} {
 								window_update_context.is_key_pressed[ascii] =

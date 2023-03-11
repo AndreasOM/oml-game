@@ -506,6 +506,12 @@ impl Renderer {
 	pub fn size(&self) -> &Vector2 {
 		&self.size
 	}
+	pub fn viewport_size(&self) -> &Vector2 {
+		&self.viewport_size
+	}
+	pub fn viewport_pos(&self) -> &Vector2 {
+		&self.viewport_pos
+	}
 
 	pub fn frame(&self) -> u64 {
 		self.frame
@@ -531,6 +537,12 @@ impl Renderer {
 		// :HACK:
 		let m = self.material_manager.get_mut_active();
 		m.set_uniform(name, &Uniform::F32(value));
+	}
+
+	pub fn set_uniform_matrix44(&mut self, name: &str, value: Matrix44) {
+		// :HACK:
+		let m = self.material_manager.get_mut_active();
+		m.set_uniform(name, &Uniform::MATRIX44(value));
 	}
 
 	fn switch_active_material_if_needed(&mut self) {

@@ -21,6 +21,7 @@ pub struct WindowUpdateContext {
 	pub window_pos:             Vector2,
 	pub window_changed:         bool,
 
+	mouse_buttons_internal: [bool; 3], // left middle right
 	previous_mouse_buttons: [bool; 3],
 	previous_keys_pressed:  [bool; 256],
 
@@ -37,6 +38,7 @@ impl WindowUpdateContext {
 			mouse_pos:               Vector2::zero(),
 			mouse_wheel_line_delta:  Vector2::zero(),
 			mouse_buttons:           [false, false, false],
+			mouse_buttons_internal:  [false, false, false],
 			is_key_pressed:          [false; 256],
 			is_function_key_pressed: [false; 16],
 			is_modifier_pressed:     [false; 256],
@@ -52,7 +54,8 @@ impl WindowUpdateContext {
 
 	pub fn update(&mut self) {
 		//		dbg!(&self);
-		self.previous_mouse_buttons = self.mouse_buttons;
+		self.previous_mouse_buttons = self.mouse_buttons_internal;
+		self.mouse_buttons = self.mouse_buttons_internal;
 		self.previous_keys_pressed = self.is_key_pressed;
 		self.previous_function_keys_pressed = self.is_function_key_pressed;
 		//		for i in 0..self.is_key_pressed.len() {
@@ -62,6 +65,7 @@ impl WindowUpdateContext {
 
 	pub fn fake_mouse_button_press(&mut self, button_index: usize) {
 		self.mouse_buttons[button_index] = true;
+		self.mouse_buttons_internal[button_index] = true;
 		self.previous_mouse_buttons[button_index] = false;
 	}
 
@@ -70,6 +74,14 @@ impl WindowUpdateContext {
 	}
 	pub fn was_mouse_button_released(&self, button_index: usize) -> bool {
 		!self.mouse_buttons[button_index] && self.previous_mouse_buttons[button_index]
+	}
+
+	pub fn consume_mouse_button_pressed(&mut self, button_index: usize) {
+		self.mouse_buttons[button_index] = false;
+	}
+	pub(crate) fn set_mouse_button(&mut self, button_index: usize, down: bool) {
+		self.mouse_buttons_internal[button_index] = down;
+		self.mouse_buttons[button_index] = down;
 	}
 
 	pub fn was_key_pressed(&self, key: u8) -> bool {
