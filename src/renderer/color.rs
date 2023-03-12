@@ -177,3 +177,16 @@ impl Color {
 		(r << 0) | (g << 8) | (b << 16) | (a << 24)
 	}
 }
+
+impl core::ops::Mul for Color {
+	type Output = Self;
+
+	fn mul(self, rhs: Self) -> Self {
+		Self {
+			r: self.r * rhs.r,
+			g: self.g * rhs.g,
+			b: self.b * rhs.b,
+			a: self.a * rhs.a,
+		}
+	}
+}
