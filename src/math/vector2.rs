@@ -1,3 +1,4 @@
+use std::ops::Rem;
 use std::str::FromStr;
 
 use serde::{Deserialize, Serialize};
@@ -99,6 +100,19 @@ impl Vector2 {
 	pub fn length(&self) -> f32 {
 		let sql = self.x * self.x + self.y * self.y;
 		sql.sqrt()
+	}
+
+	// r = atan2(length(cross(a,b)), dot(a,b))
+	// return 360 - (Mathf.Atan2(vector2.x, vector2.y) * Mathf.Rad2Deg * Mathf.Sign(vector2.x));
+	pub fn angle(&self) -> f32 {
+		//let r = self.y.atan2( self.x );
+		//		let r = self.x.atan2( self.y ) * self.x.signum();
+		let r = self.y.atan2(self.x); // * self.y.signum();
+		let d = 180.0 * r / std::f32::consts::PI;
+
+		let d = d + 360.0;
+		let d = d.rem(360.0);
+		d
 	}
 
 	pub fn scale_vector2(&self, o: &Vector2) -> Self {
