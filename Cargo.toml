@@ -43,7 +43,7 @@ png = "0.17.7"
 [dependencies.oml-audio]
 #path = "../oml-audio"
 #version = "0.8.5-dev"
-version = "0.8.6-alpha"
+version = "0.8.8-alpha"
 
 #[dependencies.png]
 #git = "https://github.com/AndreasOM/image-png"
