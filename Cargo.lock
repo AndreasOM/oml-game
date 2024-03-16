@@ -1252,7 +1252,7 @@ dependencies = [
 
 [[package]]
 name = "oml-game"
-version = "0.37.1-dev"
+version = "0.37.2-alpha"
 dependencies = [
  "anyhow",
  "backtrace",
