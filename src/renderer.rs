@@ -17,6 +17,7 @@ use crate::math::{
 	Vector2,
 	Vector3,
 };
+use crate::renderer::debug_renderer::*;
 use crate::system::System;
 use crate::window::Window;
 
@@ -754,6 +755,37 @@ impl Renderer {
 		let size = self.size;
 		//		dbg!(&size);
 		self.render_textured_quad(&Vector2::zero(), &size);
+	}
+
+	pub fn render_textured_centered_fullheight_quad(&mut self, aspect: f32) {
+		let our_aspect = self.size.x / self.size.y;
+
+		let mut tex_mtx = Matrix32::identity();
+		let pos = Vector2::zero();
+		let mut size = *self.size();
+		// let mut color = Color::red();
+		let width = 3.0;
+		if our_aspect > aspect {
+			// centered, partial cover
+			// color = Color::green();
+			size.x = size.y * aspect;
+		} else {
+			// overlap
+			// color = Color::blue();
+
+			let oa = our_aspect / aspect;
+			let tx = (1.0 - oa) * 0.5;
+			//tracing::debug!("o: {}, a: {}, oa:{}, tx: {}", our_aspect, aspect, oa, tx);
+			tex_mtx = tex_mtx
+				.with_scaling_xy(oa, 1.0)
+				.with_translation(&Vector2::new(tx, 0.0));
+		}
+
+		//debug_renderer_add_frame(&pos, &size, width, &color);
+
+		self.set_tex_matrix(&tex_mtx);
+		self.render_textured_quad(&pos, &size);
+		self.set_tex_matrix(&Matrix32::identity());
 	}
 
 	pub fn render_textured_quad(&mut self, pos: &Vector2, size: &Vector2) {
