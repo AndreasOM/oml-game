@@ -234,6 +234,7 @@ impl Window {
 						let scale = 0.5;
 						window_update_context.mouse_pos.x = mouse_x as f32;
 						window_update_context.mouse_pos.y = mouse_y as f32;
+						/*
 						tracing::debug!(
 							"{:?} {:?} {} {}",
 							&position,
@@ -241,6 +242,7 @@ impl Window {
 							&mouse_x,
 							&mouse_y
 						);
+						*/
 					},
 					WindowEvent::MouseInput { state, button, .. } => {
 						let button_index = match button {

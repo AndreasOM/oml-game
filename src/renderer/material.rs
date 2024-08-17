@@ -188,7 +188,7 @@ impl Material {
 
 			//			let vertex_size = ( core::mem::size_of<gl::type::GLFloat>() * 3 ) as i32;
 			let vertex_size = (core::mem::size_of::<f32>() * (3 + 2 + 4)) as isize; // :HACK:
-																		// :TODO: we might want to reuse this
+																		   // :TODO: we might want to reuse this
 			gl::BufferData(
 				gl::ARRAY_BUFFER,
 				vertex_size * vertex_count as isize,
